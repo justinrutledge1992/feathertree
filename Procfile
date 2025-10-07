@@ -1,0 +1,1 @@
+web: gunicorn feathertree_project.wsgi
