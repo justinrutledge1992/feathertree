@@ -1,0 +1,27 @@
+{% extends "feathertree/base.html" %}
+
+{% block head %}
+{% load static %}
+<title>Feathertree ⋅ {{ profile_user.email_prefix_tag }}</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+{% endblock head %}
+
+{% block body %}
+{% include "feathertree/_header.html" %}
+
+<div>
+    {% if user.is_authenticated %}
+        {% if user.pk == profile_user.id %}
+            <p>Edit Profile</p>
+            <a href="{% url 'feathertree:logout' %}">Log Out</a>
+        {% endif %}
+        {% if user.is_staff %}
+            <p>Edit Profile (Admin)</a>
+        {% endif %}
+    {% endif %}
+
+    <h4>{{ profile_user.email_prefix_tag }}</h4>
+    <p>Email: {{ profile_user.email }}</p>
+</div>
+{% endblock body %}

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>feathertree</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+
+    {% block head %}{% endblock head %}
+</head>
+
+<body>
+    <div>
+        {% block body %}{% endblock body %}
+        {% include "feathertree/_footer.html" %}
+    </div>
+</body>
+</html>

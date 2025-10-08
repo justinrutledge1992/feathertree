@@ -1,0 +1,43 @@
+{% extends "feathertree/base.html" %}
+
+{% block head %}
+<title>feathertree</title>
+<meta name="description" content="Welcome to Feathertree! A collaborative storytelling platform.">
+<meta name="keywords" content="">
+{% endblock head %}
+
+{% block body %}
+
+{% include "feathertree/_header.html" %}
+
+{% if user.is_authenticated %}
+
+<div>
+    <div>
+        <a href="{% url 'feathertree:index' %}">Create Story</a>
+        <a href="{% url 'feathertree:user_profile' user.pk %}">Your Stories</a>
+    </div>
+</div>
+
+{% else %}
+
+<div>
+    <h1>Feathertree.</h1>
+    <p>A branching storybook.</p>
+    <a href="{% url 'feathertree:user_create' %}">Sign Up To Get Started</a>
+</div>
+
+<div>
+    <p>Connect with other authors.</p>
+    <p>Browse writings and add to them to create fascinating stories with people all over the world.</p>
+</div>
+
+<div>
+    <p><strong>Ready To Get Started?</strong></p>
+    <p>Sign up using the link below!</p>
+    <a href="{% url 'feathertree:user_create' %}">Sign Up Now</a>
+</div>
+
+{% endif %}
+
+{% endblock body %}

@@ -1,0 +1,54 @@
+{% extends "../feathertree/simple_form_base.html" %}
+
+{% block head %}
+<title>Feathertree ⋅ Login</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+{% endblock head %}
+
+{% block simple_form_content %}
+{% if not user.is_authenticated %}
+
+<h4>Log In</h4>
+
+<form action="{% url 'feathertree:login' %}" method="post">
+    {% csrf_token %}
+
+    <label for="id_username">Email address *</label>
+    <input 
+        type="text" 
+        name="username" 
+        id="id_username" 
+        required 
+        autocomplete="username" 
+        maxlength="254">
+
+    <label for="id_password">Password *</label>
+    <input 
+        type="password" 
+        name="password" 
+        id="id_password" 
+        required 
+        autocomplete="current-password">
+
+    <button type="submit">Log In</button>
+</form>
+
+<p>If you don't have an account, sign up <a href="{% url 'feathertree:user_create' %}">here</a>!</p>
+
+<script>
+    const passwordInput = document.getElementById('id_password');
+
+    passwordInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            e.target.form.submit();
+        }
+    });
+</script>
+
+{% else %}
+<p>You are already logged in.</p>
+<p><a href="{% url 'feathertree:logout' %}">Logout</a> and try again.</p>
+{% endif %}
+{% endblock simple_form_content %}
