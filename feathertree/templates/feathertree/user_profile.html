@@ -14,7 +14,7 @@
     {% if user.is_authenticated %}
         {% if user.pk == profile_user.id %}
             <p>Edit Profile</p>
-            <a href="{% url 'feathertree:logout' %}">Log Out</a>
+            <a href="{% url 'logout' %}">Log Out</a>
         {% endif %}
         {% if user.is_staff %}
             <p>Edit Profile (Admin)</a>

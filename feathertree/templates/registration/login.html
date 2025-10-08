@@ -11,7 +11,7 @@
 
 <h4>Log In</h4>
 
-<form action="{% url 'feathertree:login' %}" method="post">
+<form action="{% url 'login' %}" method="post">
     {% csrf_token %}
 
     <label for="id_username">Email address *</label>

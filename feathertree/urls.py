@@ -1,14 +1,12 @@
+from django.contrib import admin
 from django.urls import path, include
 from . import views
 
 app_name = "feathertree" # namespace for URLs when referenced dynamically in the views/templates
 
 urlpatterns = [
-    # index URL:
+    # Index URL:
     path("", views.index, name="index"),
-    
-    # 'registration' URLs:
-    path("accounts/", include("django.contrib.auth.urls")), # see comments below for included URLs
 
     # User URLs:
     path("user/create", views.user_create, name="user_create"),
@@ -23,13 +21,3 @@ urlpatterns = [
     # Test Page (intended for rapid testing of new backend functionality):
     path("test-page", views.test_page, name="test_page"),
 ]
-
-# URLs included with > path("accounts/", include("django.contrib.auth.urls")),]
-#  accounts/login/ [name='login']
-#  accounts/logout/ [name='logout']
-#  accounts/password_change/ [name='password_change']
-#  accounts/password_change/done/ [name='password_change_done']
-#  accounts/password_reset/ [name='password_reset']
-#  accounts/password_reset/done/ [name='password_reset_done']
-#  accounts/reset/<uidb64>/<token>/ [name='password_reset_confirm']
-#  accounts/reset/done/ [name='password_reset_complete']

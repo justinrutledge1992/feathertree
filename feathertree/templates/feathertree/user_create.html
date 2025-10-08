@@ -21,10 +21,10 @@
     <button type="submit">Sign Up</button>
 </form>
 
-<p>Already have an account? Log in <a href="{% url 'feathertree:login' %}">here</a>!</p>
+<p>Already have an account? Log in <a href="{% url 'login' %}">here</a>!</p>
 
 {% else %}
 <p>You are already logged in.</p>
-<p><a href="{% url 'feathertree:logout' %}">Logout</a> and try again.</p>
+<p><a href="{% url 'logout' %}">Logout</a> and try again.</p>
 {% endif %}
 {% endblock simple_form_content %}
