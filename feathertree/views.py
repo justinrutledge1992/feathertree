@@ -1,7 +1,6 @@
-from django.http import HttpResponse
 from django.contrib.auth import login
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .models import User
 from .forms import UserCreationForm
