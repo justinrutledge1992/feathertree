@@ -1,43 +1,53 @@
 {% extends "feathertree/base.html" %}
 
 {% block head %}
-<title>feathertree</title>
-<meta name="description" content="Welcome to Feathertree! A collaborative storytelling platform.">
-<meta name="keywords" content="">
+<title>Feathertree</title>
+<meta name="description" content="Welcome to Feathertree — a collaborative storytelling platform where authors build branching tales together.">
 {% endblock head %}
 
 {% block body %}
-
 {% include "feathertree/_header.html" %}
 
-{% if user.is_authenticated %}
+<main class="container">
 
-<div>
-    <div>
-        <a href="{% url 'feathertree:index' %}">Create Story</a>
-        <a href="{% url 'feathertree:user_profile' user.pk %}">Your Stories</a>
+  {% if user.is_authenticated %}
+
+  <section class="welcome-section">
+    <h1>Welcome back, {{ user.username }}!</h1>
+    <p class="subtitle">Continue your journey of creating and exploring stories.</p>
+
+    <div class="button-group">
+      <a class="btn primary" href="{% url 'feathertree:index' %}">Create a New Story</a>
+      <a class="btn secondary" href="{% url 'feathertree:user_profile' user.pk %}">Your Stories</a>
     </div>
-</div>
+  </section>
 
-{% else %}
+  {% else %}
 
-<div>
-    <h1>Feathertree.</h1>
-    <p>A branching storybook.</p>
-    <a href="{% url 'feathertree:user_create' %}">Sign Up To Get Started</a>
-</div>
+  <section class="hero">
+    <h1 class="hero-title">Feathertree</h1>
+    <p class="hero-subtitle">A branching storybook for collective imagination.</p>
+    <a class="btn primary" href="{% url 'feathertree:user_create' %}">Sign Up To Get Started</a>
+  </section>
 
-<div>
-    <p>Connect with other authors.</p>
-    <p>Browse writings and add to them to create fascinating stories with people all over the world.</p>
-</div>
+  <section class="info">
+    <div class="info-block">
+      <h2>Collaborate with Authors</h2>
+      <p>Join a community of storytellers. Add your voice to stories that grow and evolve with every contribution.</p>
+    </div>
 
-<div>
-    <p><strong>Ready To Get Started?</strong></p>
-    <p>Sign up using the link below!</p>
-    <a href="{% url 'feathertree:user_create' %}">Sign Up Now</a>
-</div>
+    <div class="info-block">
+      <h2>Discover Endless Possibilities</h2>
+      <p>Browse unique story branches and explore how imagination takes different paths through shared narratives.</p>
+    </div>
+  </section>
 
-{% endif %}
+  <section class="cta">
+    <p><strong>Ready to begin your story?</strong></p>
+    <a class="btn accent" href="{% url 'feathertree:user_create' %}">Join Feathertree</a>
+  </section>
 
+  {% endif %}
+
+</main>
 {% endblock body %}
