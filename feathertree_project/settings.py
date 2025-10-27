@@ -155,7 +155,7 @@ if DEVELOPMENT_MODE is True: # set all Vars to the env or to None, and don't thr
 elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic': # this prevents the static site from throwing errors at build-phase
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend" # use SMTP backend in production
     try: 
-        EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER") 
+        EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
         EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
         EMAIL_HOST = os.getenv("EMAIL_HOST")
         EMAIL_PORT = os.getenv("EMAIL_PORT")
