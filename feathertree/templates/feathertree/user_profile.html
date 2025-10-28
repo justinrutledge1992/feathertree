@@ -2,7 +2,7 @@
 
 {% block head %}
 {% load static %}
-<title>Feathertree ⋅ {{ profile_user.email_prefix_tag }}</title>
+<title>Feathertree ⋅ {{ profile_user.display_name }}</title>
 <meta name="description" content="">
 <meta name="keywords" content="">
 {% endblock head %}
@@ -21,7 +21,7 @@
         {% endif %}
     {% endif %}
 
-    <h4>{{ profile_user.email_prefix_tag }}</h4>
+    <h4>{{ profile_user.display_name }}</h4>
     <p>Email: {{ profile_user.email }}</p>
 </div>
 {% endblock body %}

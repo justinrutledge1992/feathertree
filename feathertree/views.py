@@ -24,10 +24,6 @@ def user_create(request):
         if form.is_valid():
             # process the data in form.cleaned_data as required
             new_user = form.save(commit=False)
-            email = new_user.email
-            domain_and_extension = email.split("@")[1]
-            if not (re.match(domain_and_extension, "benedictine.edu") or re.match(domain_and_extension, "ravens.benedictine.edu")):
-                return form_invalid_response_w_msg(request, UserCreationForm(request.POST), "feathertree/user_create.html", "Sorry, but it looks like you don't even go here. Use your college email address to create your account so we can keep this site safe.")
             new_user.is_active = False
             new_user.save()
             send_new_user_confirmation_email(new_user)
@@ -44,9 +40,10 @@ def user_profile(request, user_id):
         return HttpResponseRedirect(reverse("feathertree:index"))
     else: # user is logged in
         profile_user = get_object_or_404(User, pk=user_id)
-        user_cards = profile_user.cards.all().order_by("-publish_date") 
-        context = {"profile_user": profile_user, "user_cards": user_cards} # represents the user whose profile is being viewed
-        return render(request, "feathertree/user_profile.html", context)
+        # replace this with some kind of "story" or "chapter" list:
+            # user_cards = profile_user.cards.all().order_by("-publish_date") 
+        context = {"profile_user": profile_user} # represents the user whose profile is being viewed
+        return render(request, "feathertree/user_profile.html")
 
 
 def user_deactivate(request, user_id):
