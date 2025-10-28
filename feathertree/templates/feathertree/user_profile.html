@@ -5,23 +5,89 @@
 <title>Feathertree ⋅ {{ profile_user.display_name }}</title>
 <meta name="description" content="">
 <meta name="keywords" content="">
+<style>
+.story-group {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    background-color: #f9f9f9;
+}
+.story-header {
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.story-header:hover { color: #007acc; }
+.chapter-list {
+    margin-top: 0.5em;
+    margin-left: 1em;
+    display: none;
+}
+.chapter-list.open { display: block; }
+.chapter-list li {
+    list-style-type: none;
+    padding: 0.2em 0;
+}
+</style>
 {% endblock head %}
 
 {% block body %}
 {% include "feathertree/_header.html" %}
 
-<div>
+<div class="profile content">
+    <h4>{{ profile_user.display_name }}'s Feathertree</h4>
+
     {% if user.is_authenticated %}
+        <p>{{ profile_user.email }}</p>
+
         {% if user.pk == profile_user.id %}
-            <p>Edit Profile</p>
-            <a href="{% url 'logout' %}">Log Out</a>
+            <p><a href="{% url 'logout' %}">Log Out</a></p>
         {% endif %}
+
         {% if user.is_staff %}
-            <p>Edit Profile (Admin)</a>
+            <p>{{ profile_user.display_name }}'s Feathertree (Admin)</p>
         {% endif %}
     {% endif %}
 
-    <h4>{{ profile_user.display_name }}</h4>
-    <p>Email: {{ profile_user.email }}</p>
+    <hr>
+
+    <h5>Stories & Chapters</h5>
+
+    {% regroup chapters by story as story_groups %}
+
+    {% if story_groups %}
+        {% for group in story_groups %}
+            <div class="story-group">
+                <div class="story-header" onclick="toggleChapters('{{ group.grouper.id }}')">
+                    <span>{{ group.grouper.title }}</span>
+                    <span>({{ group.list|length }} chapter{{ group.list|length|pluralize }})</span>
+                </div>
+                <ul id="chapters-{{ group.grouper.id }}" class="chapter-list">
+                    {% for chapter in group.list %}
+                        <li>
+                            <a href="{% url 'feathertree:chapter_view' chapter.id %}">
+                                Chapter {{ chapter.ordinal }}:
+                                {{ chapter.title|default:"Untitled" }}
+                            </a>
+                            <small>· {{ chapter.timestamp|date:"F j, Y" }}</small>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p><em>No chapters yet.</em></p>
+    {% endif %}
 </div>
+
+<script>
+function toggleChapters(storyId) {
+    const list = document.getElementById(`chapters-${storyId}`);
+    list.classList.toggle("open");
+}
+</script>
+
 {% endblock body %}

@@ -1,0 +1,25 @@
+{% extends "feathertree/simple_form_base.html" %}
+
+{% block head %}
+<title>Feathertree ⋅ Create New Story</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+{% endblock head %}
+
+{% block simple_form_content %}
+{% if not user.is_authenticated %}
+    <h4><a href="{% url 'feathertree:user_create' %}">Sign Up</a> to start writing!</h4>
+    <p>Already have an account? Log in <a href="{% url 'login' %}">here</a>!</p>
+{% else %}
+    {% include "feathertree/_form_errors.html" %}
+
+    <h4>New Story</h4>
+    <p>Start by giving your story a title.</p>
+
+    <form action="{% url 'feathertree:story_create' %}" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Publish!</button>
+    </form>
+{% endif %}
+{% endblock simple_form_content %}

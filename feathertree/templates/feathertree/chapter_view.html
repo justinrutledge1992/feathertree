@@ -1,0 +1,77 @@
+{% extends "feathertree/base.html" %}
+
+{% block head %}
+{% load static %}
+<title>Feathertree ⋅ {{ chapter.title|default:"Untitled Chapter" }}</title>
+<meta name="description" content="Read chapter {{ chapter.ordinal }} of {{ chapter.story.title }} by {{ chapter.author.get_username }}">
+<meta name="keywords" content="Feathertree, chapter, story, {{ chapter.story.title }}, {{ chapter.author.get_username }}">
+{% endblock head %}
+
+{% block body %}
+{% include "feathertree/_header.html" %}
+
+<main class="chapter-view content">
+    {% if user.is_authenticated %}
+        <article class="chapter">
+            <header class="chapter-header">
+                <h2 class="chapter-title">{{ chapter.title|default:"Untitled Chapter" }}</h2>
+                <p class="chapter-meta">
+                    <em>
+                        Chapter {{ chapter.ordinal }}
+                        {% if chapter.draft %}(Draft){% endif %}
+                    </em><br>
+                    <small>
+                        By {{ chapter.author.get_username }} |
+                        {{ chapter.timestamp|date:"F j, Y, g:i a" }}
+                    </small>
+                </p>
+            </header>
+
+            <section class="chapter-content">
+                {{ chapter.content }}
+            </section>
+
+            <footer class="chapter-footer">
+                {% if previous_chapter %}
+                    <p>
+                        <a href="{% url 'feathertree:chapter_view' previous_chapter.id %}">
+                            ← Previous Chapter
+                        </a>
+                    </p>
+                {% else %}
+                    <p><em>This is the first chapter.</em></p>
+                {% endif %}
+
+                {% if next_chapters %}
+                    <p><strong>Branching Next Chapters:</strong></p>
+                    <ul>
+                        {% for nxt in next_chapters %}
+                            <li>
+                                <a href="{% url 'feathertree:chapter_view' nxt.id %}">
+                                    Chapter {{ nxt.ordinal }}: {{ nxt.title|default:"Untitled" }}
+                                </a>
+                                <small>· {{ nxt.timestamp|date:"F j, Y" }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p><em>No next chapters yet.</em></p>
+                {% endif %}
+
+                <p>
+                    <a href="{% url 'feathertree:chapter_create' chapter.id %}">
+                        + Write Next Chapter
+                    </a>
+                </p>
+            </footer>
+        </article>
+    {% else %}
+        <p>You must be logged in to view this chapter.</p>
+        <p>
+            <a href="{% url 'login' %}">Log In</a> or 
+            <a href="{% url 'feathertree:user_create' %}">Create an account</a>.
+        </p>
+    {% endif %}
+</main>
+
+{% endblock body %}

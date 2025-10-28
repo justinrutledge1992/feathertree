@@ -1,9 +1,9 @@
 from django.contrib.auth import login
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from .models import User
-from .forms import UserCreationForm
+from .models import User, Story, Chapter
+from .forms import UserCreationForm, StoryCreationForm, ChapterCreationForm
 from .helpers import form_invalid_response, form_invalid_response_w_msg
 from .mailers import send_new_user_confirmation_email
 from .tokens import account_activation_token
@@ -14,6 +14,7 @@ import re
 def index(request):
     return render(request, "feathertree/index.html")
 
+# User Views
 def user_create(request):
     # if this is a POST request we need to process the form data
     if request.method == "POST":
@@ -36,15 +37,17 @@ def user_create(request):
         return render(request, "feathertree/user_create.html", {"form": form})
     
 def user_profile(request, user_id):
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect(reverse("feathertree:index"))
-    else: # user is logged in
-        profile_user = get_object_or_404(User, pk=user_id)
-        # replace this with some kind of "story" or "chapter" list:
-            # user_cards = profile_user.cards.all().order_by("-publish_date") 
-        context = {"profile_user": profile_user} # represents the user whose profile is being viewed
-        return render(request, "feathertree/user_profile.html")
+    profile_user = get_object_or_404(User, pk=user_id)
 
+    # Fetch all chapters written by this user, along with their stories
+    chapters = (
+        Chapter.objects
+        .filter(author=profile_user)
+        .select_related("story")
+        .order_by("story__title", "ordinal")
+    )
+
+    return render(request,"feathertree/user_profile.html",{"profile_user": profile_user,"chapters": chapters})
 
 def user_deactivate(request, user_id):
     if not request.user.is_authenticated:
@@ -74,6 +77,70 @@ def user_activation(request, **kwargs):
             return render(request, "feathertree/user_activation.html")
         else:
             return HttpResponseRedirect(reverse("feathertree:index"))
+
+# Story Views:
+def story_create(request):
+    if request.method == "POST":
+        form = StoryCreationForm(request.POST)
+        if form.is_valid():
+            story, chapter = form.save(author=request.user, commit=True)
+            return redirect("feathertree:chapter_view", chapter_id=chapter.id)
+        return render(request, "feathertree/story_create.html", {"form": form})
+    else:
+        form = StoryCreationForm()
+        return render(request, "feathertree/story_create.html", {"form": form})
+
+# Used to create a chapter beyond the first one
+def chapter_create(request, prev_chapter_id):
+    prev_chapter = get_object_or_404(Chapter, pk=prev_chapter_id)
+    story = prev_chapter.story
+    # if this is a POST request we need to process the form data
+    if request.method == "POST":
+        form = ChapterCreationForm(request.POST)
+        if form.is_valid():
+            new_chapter = form.save(commit=False)
+            new_chapter.story = story
+            new_chapter.author = request.user
+            new_chapter.ordinal = (prev_chapter.ordinal) + 1
+            new_chapter.previous_chapter = prev_chapter  # point this new chapter to the previous chapter in the database
+            new_chapter.save()
+            return redirect("feathertree:chapter_view", chapter_id=new_chapter.id)
+        # fallback: render with errors
+        else:
+            return render(request, "feathertree/chapter_create.html", {"form": form,"story": story,"prev_chapter": prev_chapter})
+    else: # process GET request
+        form = ChapterCreationForm()
+        return render(request, "feathertree/chapter_create.html", {"form": form, "prev_chapter_id": prev_chapter_id})
+    
+# The Story view simply find the first chapter in the story and redirects the user there
+def story_view(request, story_id):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse("feathertree:index"))
+    else:
+        story = get_object_or_404(Story, pk=story_id)
+        first_chapter = story.chapters.filter(ordinal=1).first()
+        return redirect("feathertree:chapter_view", chapter_id=first_chapter.id)
+
+def chapter_view(request, chapter_id):
+    chapter = get_object_or_404(Chapter, pk=chapter_id)
+
+    previous_chapter = chapter.previous_chapter
+
+    next_chapters = (
+        chapter.next_chapters.all()  # via related_name
+        .select_related("story")
+        .order_by("timestamp")  # pick your ordering
+    )
+
+    return render(
+        request,
+        "feathertree/chapter_view.html",
+        {
+            "chapter": chapter,
+            "previous_chapter": previous_chapter,
+            "next_chapters": next_chapters,
+        },
+    )
 
 # Static pages:
 def new_user_instructions(request):
