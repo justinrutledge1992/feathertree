@@ -21,8 +21,8 @@
                         {% if chapter.draft %}(Draft){% endif %}
                     </em><br>
                     <small>
-                        By {{ chapter.author.get_username }} |
-                        {{ chapter.timestamp|date:"F j, Y, g:i a" }}
+                        {{ chapter.author.display_name }} |
+                        {{ chapter.timestamp|date:"F j, Y" }}
                     </small>
                 </p>
             </header>
