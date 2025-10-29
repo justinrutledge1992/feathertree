@@ -1,7 +1,7 @@
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib import admin
-from .models import User
-from .forms import UserCreationForm
+from .models import User, Story, Chapter
+from .forms import UserCreationForm, StoryCreationForm, ChapterCreationForm
 
 # Override admin site attributes:
     # Text to put at the end of each page's <title>.
@@ -33,5 +33,23 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ("display_name", "email",)
     ordering = ("-date_joined",)
 
+class StoryAdmin(admin.ModelAdmin):
+    add_form = StoryCreationForm
+    model = Story
+    list_display = ("title",)
+    list_filter = ("title",)
+    search_fields = ("title",)
+
+
+class ChapterAdmin(admin.ModelAdmin):
+    add_form = ChapterCreationForm
+    model = Chapter
+    list_display = ("title", "timestamp", "author", "story", "ordinal", "draft", "previous_chapter")
+    list_filter = ("title", "timestamp", "author", "story", "ordinal", "draft", "previous_chapter")
+    ordering = ("-timestamp",)
+    search_fields = ("title", "author", "story")
+
 # Register all models here.
 admin.site.register(User, UserAdmin)
+admin.site.register(Story, StoryAdmin)
+admin.site.register(Chapter, ChapterAdmin)

@@ -47,6 +47,8 @@ class User(AbstractUser):
 # A Story is a set of chapters
 class Story(models.Model):
     title = models.CharField(max_length=250) # Story titles are required
+    def __str__(self):
+        return self.title
 
 # A Chapter is the basic building block of stories
 class Chapter(models.Model):
@@ -67,3 +69,5 @@ class Chapter(models.Model):
         related_name="next_chapters",
         on_delete=models.CASCADE,  # or SET_NULL if you prefer
     )
+    def __str__(self):
+        return self.title
