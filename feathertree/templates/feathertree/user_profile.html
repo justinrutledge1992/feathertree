@@ -12,21 +12,6 @@
 
 <div class="profile content">
     <h4>{{ profile_user.display_name }}'s Feathertree</h4>
-
-    {% if user.is_authenticated %}
-        <p>{{ profile_user.email }}</p>
-
-        {% if user.pk == profile_user.id %}
-            <p><a href="{% url 'logout' %}">Log Out</a></p>
-        {% endif %}
-
-        {% if user.is_staff %}
-            <p>{{ profile_user.display_name }}'s Feathertree (Admin)</p>
-        {% endif %}
-    {% endif %}
-
-    <hr>
-
     <h5>Stories & Chapters</h5>
 
     {% regroup chapters by story as story_groups %}
