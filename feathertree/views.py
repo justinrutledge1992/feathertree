@@ -1,6 +1,6 @@
 from django.contrib.auth import login
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
 from django.urls import reverse
 from .models import User, Story, Chapter
 from .forms import UserCreationForm, StoryCreationForm, ChapterCreationForm
@@ -9,6 +9,7 @@ from .mailers import send_new_user_confirmation_email
 from .tokens import account_activation_token
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
+from django.contrib import messages
 import re
 
 def index(request):
@@ -123,24 +124,72 @@ def story_view(request, story_id):
 
 def chapter_view(request, chapter_id):
     chapter = get_object_or_404(Chapter, pk=chapter_id)
+    user = request.user
 
-    previous_chapter = chapter.previous_chapter
+    is_author = user.is_authenticated and (user == getattr(chapter, "author", None))
+    can_moderate = user.is_authenticated and (
+        user.is_staff or user.has_perm("feathertree.change_chapter")  # adjust app label if needed
+    )
+
+    # View permission (don’t tie to can_edit)
+    can_view_draft = (not chapter.draft) or is_author or can_moderate
+    if not can_view_draft:
+        raise Http404("Chapter not found")
+
+    # Capabilities
+    can_edit = (is_author or can_moderate) and chapter.draft and (not chapter.submitted_for_review)
+    # You can keep these for template state if you still show anything else:
+    can_request_publish = is_author and chapter.draft and (not chapter.submitted_for_review)
+    can_publish = can_moderate and chapter.draft
+
+    # Default form
+    form = ChapterCreationForm(instance=chapter) if can_edit else None
+
+    if request.method == "POST":
+        if not can_edit:
+            return HttpResponseForbidden("Editing disabled while awaiting review or you lack permission.")
+        form = ChapterCreationForm(request.POST, instance=chapter)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            # Save edits AND request publication in one go
+            obj.submitted_for_review = True
+            obj.save()
+            return redirect("feathertree:chapter_view", chapter_id=chapter.id)
+        # if invalid, fall through and render with errors
 
     next_chapters = (
-        chapter.next_chapters.all()  # via related_name
-        .select_related("story")
-        .order_by("timestamp")  # pick your ordering
+        chapter.next_chapters.all().select_related("story").order_by("timestamp")
     )
+    if not (is_author or can_moderate):
+        next_chapters = next_chapters.filter(draft=False)
 
     return render(
         request,
         "feathertree/chapter_view.html",
         {
             "chapter": chapter,
-            "previous_chapter": previous_chapter,
+            "previous_chapter": chapter.previous_chapter,
             "next_chapters": next_chapters,
+            "can_edit": can_edit,
+            "can_request_publish": can_request_publish,  # optional now
+            "can_publish": can_publish,                  # optional
+            "form": form,
         },
     )
+
+
+
+def chapter_publish(request, chapter_id):
+    chapter = get_object_or_404(Chapter, pk=chapter_id)
+
+    if not request.user.is_authenticated or request.user != chapter.author:
+        return redirect("feathertree:chapter_view", chapter_id=chapter.id)
+
+    # Example logic: mark for moderation
+    chapter.submitted_for_review = True
+    chapter.save()
+    messages.success(request, "Your publication request has been sent for review.")
+    return redirect("feathertree:chapter_view", chapter_id=chapter.id)
 
 # Static pages:
 def new_user_instructions(request):

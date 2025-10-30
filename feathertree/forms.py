@@ -30,13 +30,11 @@ class StoryCreationForm(forms.ModelForm):
         max_length=100,
         required=False,
         label=_("First Chapter Title"),
-        help_text=_("Optional. You can leave this blank; chapters don’t have to be titled.")
     )
     first_chapter_content = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 10}),
         required=True,
         label=_("First Chapter Content"),
-        help_text=_("Write the opening chapter of your story.")
     )
 
     class Meta:
@@ -44,9 +42,6 @@ class StoryCreationForm(forms.ModelForm):
         fields = ["title"]  # only exposed model field
         labels = {
             "title": _("Title"),
-        }
-        help_texts = {
-            "title": _("Title your story! Note this title cannot change after you create it."),
         }
 
     # Override to create the Story (with given author) and also creates the first Chapter.
@@ -79,8 +74,4 @@ class ChapterCreationForm(forms.ModelForm):
         labels = {
             "title": _("Title"),
             "content": _("Content"),
-        }
-        help_texts = {
-            "title": _("Title your chapter! Note this title cannot change after you create it. Chapter titles are not required."),
-            "content": _("Write the text for your chapter here."),
         }

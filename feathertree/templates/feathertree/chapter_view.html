@@ -1,8 +1,8 @@
 {% extends "feathertree/base.html" %}
+{% load static %}
 
 {% block head %}
-{% load static %}
-<title>Feathertree ⋅ {{ chapter.title|default:"Untitled Chapter" }}</title>
+<title>Feathertree ⋅ {{ chapter.story.title }} — {{ chapter.title|default:"Untitled Chapter" }}</title>
 <meta name="description" content="Read chapter {{ chapter.ordinal }} of {{ chapter.story.title }} by {{ chapter.author.get_username }}">
 <meta name="keywords" content="Feathertree, chapter, story, {{ chapter.story.title }}, {{ chapter.author.get_username }}">
 {% endblock head %}
@@ -11,67 +11,94 @@
 {% include "feathertree/_header.html" %}
 
 <main class="chapter-view content">
-    {% if user.is_authenticated %}
-        <article class="chapter">
-            <header class="chapter-header">
-                <h2 class="chapter-title">{{ chapter.title|default:"Untitled Chapter" }}</h2>
-                <p class="chapter-meta">
-                    <em>
-                        Chapter {{ chapter.ordinal }}
-                        {% if chapter.draft %}(Draft){% endif %}
-                    </em><br>
-                    <small>
-                        {{ chapter.author.display_name }} |
-                        {{ chapter.timestamp|date:"F j, Y" }}
-                    </small>
-                </p>
-            </header>
 
-            <section class="chapter-content">
-                {{ chapter.content }}
-            </section>
-
-            <footer class="chapter-footer">
-                {% if previous_chapter %}
-                    <p>
-                        <a href="{% url 'feathertree:chapter_view' previous_chapter.id %}">
-                            ← Previous Chapter
-                        </a>
-                    </p>
-                {% else %}
-                    <p><em>This is the first chapter.</em></p>
-                {% endif %}
-
-                {% if next_chapters %}
-                    <p><strong>Branching Next Chapters:</strong></p>
-                    <ul>
-                        {% for nxt in next_chapters %}
-                            <li>
-                                <a href="{% url 'feathertree:chapter_view' nxt.id %}">
-                                    Chapter {{ nxt.ordinal }}: {{ nxt.title|default:"Untitled" }}
-                                </a>
-                                <small>· {{ nxt.timestamp|date:"F j, Y" }}</small>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p><em>No next chapters yet.</em></p>
-                {% endif %}
-
-                <p>
-                    <a href="{% url 'feathertree:chapter_create' chapter.id %}">
-                        + Write Next Chapter
-                    </a>
-                </p>
-            </footer>
-        </article>
-    {% else %}
-        <p>You must be logged in to view this chapter.</p>
-        <p>
-            <a href="{% url 'login' %}">Log In</a> or 
-            <a href="{% url 'feathertree:user_create' %}">Create an account</a>.
-        </p>
+  <!-- 🌿 STORY HEADER -->
+  <header class="story-header section-block">
+    <h1 class="story-title">{{ chapter.story.title }}</h1>
+    {% if chapter.story.description %}
+      <p class="story-description">{{ chapter.story.description }}</p>
     {% endif %}
-</main>
+  </header>
 
+  <article class="chapter stack">
+
+    <!-- 🟡 DRAFT NOTICE -->
+    {% if chapter.draft %}
+      <div class="notice notice-draft">
+        {% if chapter.submitted_for_review %}
+          <strong>Pending Review:</strong>
+          This chapter has been submitted for moderation and can no longer be edited until review is complete.
+        {% else %}
+          <strong>Draft:</strong>
+          Saving your changes will also submit this chapter for review.
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <!-- 📝 CHAPTER HEADER -->
+    <header class="chapter-header section-block">
+      <p class="chapter-meta">
+        <em>Chapter {{ chapter.ordinal }}</em>
+        <small>{{ chapter.author.display_name }} | {{ chapter.timestamp|date:"F j, Y" }}</small>
+      </p>
+      <h2 class="chapter-title">{{ chapter.title|default:"Untitled Chapter" }}</h2>
+    </header>
+
+    <!-- ✏️ MAIN BODY AREA -->
+    {% if chapter.draft %}
+      {% if can_edit and form %}
+        <section class="section-block section-content emphasis">
+          <form method="post" class="edit-form">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">💾 Save & Submit for Review</button>
+          </form>
+          <p class="help-text">
+            <small>After submitting for review, editing will be disabled until a moderator responds.</small>
+          </p>
+        </section>
+      {% endif %}
+    {% else %}
+      <!-- PUBLISHED: show read-only content -->
+      <section class="section-block section-content emphasis">
+        <div class="chapter-content">
+          {{ chapter.content|safe }}
+        </div>
+      </section>
+    {% endif %}
+
+    <!-- 🔗 NAVIGATION -->
+    <footer class="chapter-footer section-block">
+      {% if previous_chapter %}
+        <p>
+          <a href="{% url 'feathertree:chapter_view' previous_chapter.id %}">← Previous Chapter</a>
+        </p>
+      {% else %}
+        <p><em>This is the first chapter.</em></p>
+      {% endif %}
+
+      {% if next_chapters %}
+        <p><strong>Branching Next Chapters:</strong></p>
+        <ul>
+          {% for nxt in next_chapters %}
+            <li>
+              <a href="{% url 'feathertree:chapter_view' nxt.id %}">
+                Chapter {{ nxt.ordinal }}: {{ nxt.title|default:"Untitled" }}
+                {% if nxt.draft %}<em> (Draft)</em>{% endif %}
+              </a>
+              <small>· {{ nxt.timestamp|date:"F j, Y" }}</small>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p><em>No next chapters yet.</em></p>
+      {% endif %}
+
+      <p>
+        <a href="{% url 'feathertree:chapter_create' chapter.id %}">+ Write Next Chapter</a>
+      </p>
+    </footer>
+
+  </article>
+</main>
 {% endblock body %}

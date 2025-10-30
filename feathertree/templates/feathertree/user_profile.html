@@ -5,33 +5,6 @@
 <title>Feathertree ⋅ {{ profile_user.display_name }}</title>
 <meta name="description" content="">
 <meta name="keywords" content="">
-<style>
-.story-group {
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin: 1em 0;
-    padding: 0.5em 1em;
-    background-color: #f9f9f9;
-}
-.story-header {
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.story-header:hover { color: #007acc; }
-.chapter-list {
-    margin-top: 0.5em;
-    margin-left: 1em;
-    display: none;
-}
-.chapter-list.open { display: block; }
-.chapter-list li {
-    list-style-type: none;
-    padding: 0.2em 0;
-}
-</style>
 {% endblock head %}
 
 {% block body %}
@@ -61,7 +34,7 @@
     {% if story_groups %}
         {% for group in story_groups %}
             <div class="story-group">
-                <div class="story-header" onclick="toggleChapters('{{ group.grouper.id }}')">
+                <div class="story-header" onclick="toggleChapters('{{ group.grouper.id }}')" role="button" tabindex="0" aria-controls="chapters-{{ group.grouper.id }}" aria-expanded="false">
                     <span>{{ group.grouper.title }}</span>
                     <span>({{ group.list|length }} chapter{{ group.list|length|pluralize }})</span>
                 </div>
@@ -86,7 +59,9 @@
 <script>
 function toggleChapters(storyId) {
     const list = document.getElementById(`chapters-${storyId}`);
-    list.classList.toggle("open");
+    const opened = list.classList.toggle("open");
+    const header = list?.previousElementSibling;
+    if (header) header.setAttribute('aria-expanded', opened ? 'true' : 'false');
 }
 </script>
 

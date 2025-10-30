@@ -58,6 +58,7 @@ class Chapter(models.Model):
     timestamp = models.DateTimeField(auto_now=True) # Creates a timestamp every time the record is updated
     content = models.TextField() # requires some text
     draft = models.BooleanField(default=True)
+    submitted_for_review = models.BooleanField(default=False) # used to track locked drafts
     # ForeignKey links Chapter to Story, establishing the one-to-many relationship
     # on_delete=models.CASCADE means if a Story is deleted, all their Chapters are also deleted.
     story = models.ForeignKey(Story, on_delete=models.CASCADE)

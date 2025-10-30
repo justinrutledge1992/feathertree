@@ -14,6 +14,7 @@ from django.core.management.utils import get_random_secret_key
 import sys
 import dj_database_url
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -132,6 +133,14 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
+# Enforce cache busting on every reload in dev environment:
+# STATIC_VERSION defines this loads version iteration of all static files
+# This is NOT changed when running collectstatic. It is only changed when the new server code is loaded.
+if DEVELOPMENT_MODE:
+    STATIC_VERSION = datetime.now().strftime("%Y%m%d%H%M%S")  # cache-bust on every reload
+else:
+    STATIC_VERSION = ""  # no cache-busting in production
 
 # Uncomment the line below if you have extra static files and a directory in your GitHub repo.
 # If you don't have this directory and have this uncommented your build will fail
