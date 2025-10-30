@@ -22,6 +22,15 @@
 
   <article class="chapter stack">
 
+    <!-- 📝 CHAPTER HEADER -->
+    <header class="chapter-header section-block">
+      <p class="chapter-meta">
+        <em>Chapter {{ chapter.ordinal }}</em>
+        <small>{{ chapter.author.display_name }} | {{ chapter.timestamp|date:"F j, Y" }}</small>
+      </p>
+      <h2 class="chapter-title">{{ chapter.title|default:"Untitled Chapter" }}</h2>
+    </header>
+
     <!-- 🟡 DRAFT NOTICE -->
     {% if chapter.draft %}
       <div class="notice notice-draft">
@@ -34,15 +43,6 @@
         {% endif %}
       </div>
     {% endif %}
-
-    <!-- 📝 CHAPTER HEADER -->
-    <header class="chapter-header section-block">
-      <p class="chapter-meta">
-        <em>Chapter {{ chapter.ordinal }}</em>
-        <small>{{ chapter.author.display_name }} | {{ chapter.timestamp|date:"F j, Y" }}</small>
-      </p>
-      <h2 class="chapter-title">{{ chapter.title|default:"Untitled Chapter" }}</h2>
-    </header>
 
     <!-- ✏️ MAIN BODY AREA -->
     {% if chapter.draft %}
