@@ -176,3 +176,13 @@ elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic': # this prevents the s
 # Hardcoded redirects after login/logout
 LOGIN_REDIRECT_URL = 'feathertree:index'
 LOGOUT_REDIRECT_URL = 'feathertree:successful_logout'
+
+# Celery/Redis settings
+# Run this in another process to kickstart redis on Windows:
+# celery -A feathertree_project worker -l info -P solo
+# celery -A feathertree_project flower --port=5555
+# The rest of this tutorial should still apply: 
+# https://testdriven.io/courses/django-celery/getting-started/
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+

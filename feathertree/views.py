@@ -177,8 +177,6 @@ def chapter_view(request, chapter_id):
         },
     )
 
-
-
 def chapter_publish(request, chapter_id):
     chapter = get_object_or_404(Chapter, pk=chapter_id)
 
@@ -202,5 +200,14 @@ def successful_email_sent(request):
     return render(request, "feathertree/successful_email_sent.html")
 
 # This page is only for test purposes, and will only change during brief production commits (this is dirty, I know, but quick)
+from feathertree_project.celery import divide
 def test_page(request):
-    return render(request, "feathertree/index.html")
+    task = divide.delay(1, 2)
+    # Block this request thread up to 10s waiting for the result
+    result = task.get(timeout=10)  # raises TimeoutError if it takes too long
+    ctx = {
+        "status": task.status,   # likely "SUCCESS"
+        "result": result,        # 0.5
+        "task_id": task.id,
+    }
+    return render(request, "feathertree/test_page.html", ctx)

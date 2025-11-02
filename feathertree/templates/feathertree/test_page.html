@@ -1,16 +1,12 @@
-<!-- the sole purpose of this page is to help rapidly test new functionality -->
+<!-- templates/feathertree/test_page.html -->
 <!DOCTYPE html>
-<!--
 <html lang="en">
-    <title>Test Page</title>
-    <body>
-        <h2>Mailer Test</h2>
-        <form action="{% url 'feathertree:test_page' %}" method="post">
-            {% csrf_token %}
-            <label for="email_address">Mailer: </label>
-            <input id="email_address" type="text" name="email_address" value="">
-            <input type="submit" value="OK">
-        </form>
-    </body>
+  <head><title>Test Page</title></head>
+  <body>
+    <h2>Celery Test</h2>
+    <p>One divided by two:</p>
+    <p>Status: {{ status }}</p>
+    <p>Result: {{ result }}</p>
+    <p>Task ID: {{ task_id }}</p>
+  </body>
 </html>
--->
