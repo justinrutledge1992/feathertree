@@ -15,6 +15,7 @@ import sys
 import dj_database_url
 from dotenv import load_dotenv
 from datetime import datetime
+import ssl
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -181,8 +182,12 @@ LOGOUT_REDIRECT_URL = 'feathertree:successful_logout'
 # Run this in another process to kickstart redis on Windows:
 # celery -A feathertree_project worker -l info -P solo
 # celery -A feathertree_project flower --port=5555
-# The rest of this tutorial should still apply: 
+# The rest of this tutorial should still apply:
 # https://testdriven.io/courses/django-celery/getting-started/
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
-CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
-
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://127.0.0.1:6379/0")
+# Force TLS on both broker and backend
+CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE} # or ssl.CERT_REQUIRED if you manage CA certs
+CELERY_REDIS_BACKEND_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
+# Optional: Celery 5+ sometimes benefits from this at start
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
