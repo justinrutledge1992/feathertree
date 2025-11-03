@@ -200,16 +200,28 @@ def successful_email_sent(request):
     return render(request, "feathertree/successful_email_sent.html")
 
 # This page is only for test purposes, and will only change during brief production commits (this is dirty, I know, but quick)
+from django.shortcuts import render
 from celery.result import AsyncResult
-from feathertree_project.celery import divide
+from celery import current_app  # ensures we use your configured Celery app
+from .tasks import divide
+
 def test_page(request):
-    if "task_id" in request.GET:
-        rid = request.GET["task_id"]
-        res = AsyncResult(rid)
-        ctx = {"task_id": rid, "status": res.status, "result": res.result}
+    # Poll an existing task
+    task_id = request.GET.get("task_id")
+    if task_id:
+        res = AsyncResult(task_id, app=current_app)
+        ctx = {
+            "task_id": task_id,
+            "status": res.state,     # same as res.status
+            "result": res.result if res.successful() else None,
+        }
         return render(request, "feathertree/test_page.html", ctx)
 
-    # Kick off a task
+    # Kick off a new task
     task = divide.delay(1, 2)
-    ctx = {"task_id": task.id, "status": task.status, "result": task.result}
+    ctx = {
+        "task_id": task.id,
+        "status": "PENDING",  # don’t trust task.status immediately
+        "result": None,
+    }
     return render(request, "feathertree/test_page.html", ctx)

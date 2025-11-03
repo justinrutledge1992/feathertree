@@ -1,8 +1,18 @@
 <!-- feathertree/test_page.html -->
-<!DOCTYPE html><html lang="en"><body>
-  <h2>Celery Test</h2>
-  <p>Task ID: {{ task_id }}</p>
-  <p>Status: {{ status }}</p>
-  <p>Result: {{ result }}</p>
-  <p><a href="?task_id={{ task_id }}">Refresh</a></p>
-</body></html>
+<!DOCTYPE html>
+<html>
+  <body>
+    <h2>Celery Test</h2>
+    <p>Task ID: {{ task_id }}</p>
+    <p>Status: {{ status }}</p>
+    <p>Result: {{ result }}</p>
+
+    {% if status != "SUCCESS" and task_id %}
+      <script>
+        setTimeout(() => {
+          location.href = "?task_id={{ task_id }}";
+        }, 1000);
+      </script>
+    {% endif %}
+  </body>
+</html>
