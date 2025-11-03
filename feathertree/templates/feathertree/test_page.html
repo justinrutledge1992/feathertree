@@ -1,12 +1,8 @@
-<!-- templates/feathertree/test_page.html -->
-<!DOCTYPE html>
-<html lang="en">
-  <head><title>Test Page</title></head>
-  <body>
-    <h2>Celery Test</h2>
-    <p>One divided by two:</p>
-    <p>Status: {{ status }}</p>
-    <p>Result: {{ result }}</p>
-    <p>Task ID: {{ task_id }}</p>
-  </body>
-</html>
+<!-- feathertree/test_page.html -->
+<!DOCTYPE html><html lang="en"><body>
+  <h2>Celery Test</h2>
+  <p>Task ID: {{ task_id }}</p>
+  <p>Status: {{ status }}</p>
+  <p>Result: {{ result }}</p>
+  <p><a href="?task_id={{ task_id }}">Refresh</a></p>
+</body></html>

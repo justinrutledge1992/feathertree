@@ -180,8 +180,10 @@ LOGOUT_REDIRECT_URL = 'feathertree:successful_logout'
 
 # Celery/Redis settings
 # Run this in another process to kickstart redis on Windows:
-# celery -A feathertree_project worker -l info -P solo
-# celery -A feathertree_project flower --port=5555
+#   celery -A feathertree_project worker -l info -P solo
+#   celery -A feathertree_project flower --port=5555
+# Run this to test celery connection from production environment:
+#   celery -A feathertree_project worker -l info
 # The rest of this tutorial should still apply:
 # https://testdriven.io/courses/django-celery/getting-started/
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://127.0.0.1:6379/0")
