@@ -295,3 +295,6 @@ $RECYCLE.BIN/
 .vscode
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,django,python
+
+# Custom scripts
+# startfeathertree.ps1
