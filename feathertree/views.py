@@ -10,6 +10,7 @@ from .tokens import account_activation_token
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.contrib import messages
+from .tasks import review_chapter
 import re
 
 def index(request):
@@ -127,9 +128,7 @@ def chapter_view(request, chapter_id):
     user = request.user
 
     is_author = user.is_authenticated and (user == getattr(chapter, "author", None))
-    can_moderate = user.is_authenticated and (
-        user.is_staff or user.has_perm("feathertree.change_chapter")  # adjust app label if needed
-    )
+    can_moderate = user.is_authenticated and user.is_staff
 
     # View permission (don’t tie to can_edit)
     can_view_draft = (not chapter.draft) or is_author or can_moderate
@@ -147,13 +146,15 @@ def chapter_view(request, chapter_id):
 
     if request.method == "POST":
         if not can_edit:
-            return HttpResponseForbidden("Editing disabled while awaiting review or you lack permission.")
+            return HttpResponseForbidden("Editing disabled.")
         form = ChapterCreationForm(request.POST, instance=chapter)
         if form.is_valid():
             obj = form.save(commit=False)
             # Save edits AND request publication in one go
             obj.submitted_for_review = True
             obj.save()
+            # Create publication review task
+            review_chapter.delay(chapter_id=chapter.id)
             return redirect("feathertree:chapter_view", chapter_id=chapter.id)
         # if invalid, fall through and render with errors
 
