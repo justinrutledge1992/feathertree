@@ -20,6 +20,17 @@ def review_chapter(chapter_id):
     score = 0
     feedback = ""
 
+    # Start with this chapter’s content
+    previous_text = None
+
+    # Walk backward through linked chapters
+    current = chapter
+    while current.previous_chapter is not None:
+        current = current.previous_chapter
+        previous_text = current.content + "\n" + previous_text  # prepend previous content
+
+    print("PREV TEXT: \n \n " + previous_text)
+
     # Call LLM and generate score w/ feedback
     # This is just placeholder code for now...
     if len(content) > 20:

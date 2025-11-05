@@ -200,29 +200,49 @@ def successful_logout(request):
 def successful_email_sent(request):
     return render(request, "feathertree/successful_email_sent.html")
 
+
+
+##############################################################################################################################
 # This page is only for test purposes, and will only change during brief production commits (this is dirty, I know, but quick)
-from django.shortcuts import render
-from celery.result import AsyncResult
-from celery import current_app  # ensures we use your configured Celery app
-from .tasks import divide
+import sys
+import os
+import json
+from flow_judge.flow_judge import FlowJudge
+from flow_judge.models.huggingface import Hf
+from flow_judge.metrics.metric import CustomMetric, RubricItem
+from flow_judge.eval_data_types import EvalInput
 
 def test_page(request):
-    # Poll an existing task
-    task_id = request.GET.get("task_id")
-    if task_id:
-        res = AsyncResult(task_id, app=current_app)
-        ctx = {
-            "task_id": task_id,
-            "status": res.state,     # same as res.status
-            "result": res.result if res.successful() else None,
-        }
-        return render(request, "feathertree/test_page.html", ctx)
+    model = Hf(flash_attn=False)
+    continuity_metric = CustomMetric(
+        name="Story Continuity",
+        criteria="Evaluate how well the current text continues a story from the previous text. Refer to the output as current text and the input as previous text. Do not refer to an input or output.",
+        rubric=[
+            RubricItem(score=1, description="No continuity. Very different in theme, tone, and content. New elements do not make sense in the context of the story."),
+            RubricItem(score=2, description="Poor continuity. Somewhat different in theme, tone, and content. New elements do not make sense in the context of the story."),
+            RubricItem(score=3, description="Some continuity. Somewhat aligned and also somewhat different in theme, tone, and content. New elements make sense in the context of the story."),
+            RubricItem(score=4, description="Good continuity. Aligned in theme, tone, and content. New elements make sense in the context of the story."),
+            RubricItem(score=5, description="Excellent continuity. Very aligned in theme, tone, and content. New elements make sense in the context of the story."),
+        ],
+        required_inputs=["previous_text"],
+        required_output="current_text"
+    )
 
-    # Kick off a new task
-    task = divide.delay(1, 2)
-    ctx = {
-        "task_id": task.id,
-        "status": "PENDING",  # don’t trust task.status immediately
-        "result": None,
-    }
-    return render(request, "feathertree/test_page.html", ctx)
+    judge = FlowJudge(
+        metric=continuity_metric,
+        model=model
+    )
+
+    previous_text = """A man named Bob walked onto the street."""
+    current_text = """Bob continued to walk down the street and avoid oncoming traffic."""
+
+    eval_input = EvalInput(
+    inputs=[
+        {"previous_text": previous_text}
+    ],
+    output={"current_text": current_text},
+    )
+
+    result = judge.evaluate(eval_input, save_results=False)
+
+    return render(request, "feathertree/test_page.html", {"feedback": result.feedback, "score": result.score})

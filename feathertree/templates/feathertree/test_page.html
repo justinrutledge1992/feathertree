@@ -2,17 +2,8 @@
 <!DOCTYPE html>
 <html>
   <body>
-    <h2>Celery Test</h2>
-    <p>Task ID: {{ task_id }}</p>
-    <p>Status: {{ status }}</p>
-    <p>Result: {{ result }}</p>
-
-    {% if status != "SUCCESS" and task_id %}
-      <script>
-        setTimeout(() => {
-          location.href = "?task_id={{ task_id }}";
-        }, 1000);
-      </script>
-    {% endif %}
+    <h2>Flow Judge Test</h2>
+    <p>Score: {{ score }}</p>
+    <p>Feedback: {{ feedback }}</p>
   </body>
 </html>
