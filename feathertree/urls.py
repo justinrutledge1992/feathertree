@@ -26,5 +26,5 @@ urlpatterns = [
     path("user/successful-logout", views.successful_logout, name="successful_logout"),
 
     # Test Page (intended for rapid testing of new backend functionality):
-    path("test-page", views.test_page, name="test_page"),
+    path("test-page/<int:chapter_id>/", views.test_page, name="test_page"),
 ]

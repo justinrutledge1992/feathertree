@@ -69,7 +69,7 @@ class Chapter(models.Model):
         null=True,
         blank=True,
         related_name="next_chapters",
-        on_delete=models.CASCADE,  # or SET_NULL if you prefer
+        on_delete=models.CASCADE,
     )
     def __str__(self):
         return self.title

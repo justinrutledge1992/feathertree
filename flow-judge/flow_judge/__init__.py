@@ -74,27 +74,3 @@ __all__.append("get_available_models")
 
 # Add all metric names to __all__
 __all__ += list_all_metrics()
-
-
-"""
-flow_judge public API
-"""
-
-# Re-export top-level classes so you can do:
-#   from flow_judge import Llamafile, EvalInput, FlowJudge
-from eval_data_types import EvalInput
-from models.llamafile import Llamafile
-from .flow_judge import FlowJudge
-from . import metrics
-
-# Optionally expose metrics as a subpackage
-from . import metrics
-
-__all__ = [
-    "Llamafile",
-    "EvalInput",
-    "FlowJudge",
-    "metrics",
-]
-
-__version__ = "0.1.0"

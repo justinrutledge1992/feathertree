@@ -1,12 +1,8 @@
 # feathertree/tasks.py
+from django.conf import settings
 from celery import shared_task
 from .models import Chapter
-import time
-
-@shared_task
-def divide(x, y):
-    time.sleep(1)
-    return x / y
+from .helpers import query_judge
 
 @shared_task
 def review_chapter(chapter_id):
@@ -15,33 +11,23 @@ def review_chapter(chapter_id):
         chapter = Chapter.objects.get(pk=chapter_id)
     except Chapter.DoesNotExist:
         return 0, f"Chapter with ID {chapter_id} not found."
-    
-    content = chapter.content
-    score = 0
-    feedback = ""
 
-    # Start with this chapter’s content
-    previous_text = None
-
+    previous_text = ""
     # Walk backward through linked chapters
     current = chapter
     while current.previous_chapter is not None:
         current = current.previous_chapter
         previous_text = current.content + "\n" + previous_text  # prepend previous content
 
-    print("PREV TEXT: \n \n " + previous_text)
-
     # Call LLM and generate score w/ feedback
-    # This is just placeholder code for now...
-    if len(content) > 20:
-        score = 10
-        feedback = "Great stuff! A true masterpiece."
+    if settings.DEVELOPMENT_MODE is False:
+        score, feedback = query_judge(previous_text, chapter.content)
     else:
-        score = 1
-        feedback = "way too short. Try again."
+        score = 3
+        feedback = "Good stuff."
 
     # Mark as published (draft=False) if the score exceeds some threshold
-    if score > 5:
+    if score > 2:
         chapter.draft = False
     else:
         chapter.draft = True

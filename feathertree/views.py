@@ -157,7 +157,7 @@ def chapter_view(request, chapter_id):
             review_chapter.delay(chapter_id=chapter.id)
             return redirect("feathertree:chapter_view", chapter_id=chapter.id)
         # if invalid, fall through and render with errors
-
+        
     next_chapters = (
         chapter.next_chapters.all().select_related("story").order_by("timestamp")
     )
@@ -204,14 +204,11 @@ def successful_email_sent(request):
 
 ##############################################################################################################################
 # This page is only for test purposes, and will only change during brief production commits (this is dirty, I know, but quick)
-import sys
-import os
-import json
-from flow_judge.flow_judge import FlowJudge
-from flow_judge.models.huggingface import Hf
-from flow_judge.metrics.metric import CustomMetric, RubricItem
-from flow_judge.eval_data_types import EvalInput
-
+'''
+#from flow_judge.flow_judge import FlowJudge
+#from flow_judge.models.huggingface import Hf
+#from flow_judge.metrics.metric import CustomMetric, RubricItem
+#from flow_judge.eval_data_types import EvalInput
 def test_page(request):
     model = Hf(flash_attn=False)
     continuity_metric = CustomMetric(
@@ -246,3 +243,26 @@ def test_page(request):
     result = judge.evaluate(eval_input, save_results=False)
 
     return render(request, "feathertree/test_page.html", {"feedback": result.feedback, "score": result.score})
+'''
+
+def test_page(request, chapter_id):
+    # Get chapter by ID
+    try:
+        chapter = Chapter.objects.get(pk=chapter_id)
+    except Chapter.DoesNotExist:
+        return 0, f"Chapter with ID {chapter_id} not found."
+    
+    content = chapter.content
+    score = 0
+    feedback = ""
+
+    # Start with this chapter’s content
+    previous_text = ""
+
+    # Walk backward through linked chapters
+    current = chapter
+    while current.previous_chapter is not None:
+        current = current.previous_chapter
+        previous_text = current.content + "\n" + previous_text  # prepend previous content
+
+    return render(request, "feathertree/test_page.html", {"content": content, "previous_text": previous_text})
