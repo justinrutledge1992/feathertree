@@ -96,39 +96,25 @@ Please evaluate the story continuation accurately.
 """
 
 def parse_featherjudge_response(text: str) -> tuple[str, int]:
-    """
-    Parse text like:
-      <feedback>"some feedback here"</feedback>
-      <score>"3"</score>
+    # Parse <feedback>...</feedback> and <score>...</score> from a string.
 
-    Returns (feedback_string, score_int).
-    Raises ValueError if either is missing or malformed.
-    """
-    feedback_match = re.search(
-        r"<feedback>\s*\"(.*?)\"\s*</feedback>",
-        text,
-        re.DOTALL
-    )
-    score_match = re.search(
-        r"<score>\s*\"(.*?)\"\s*</score>",
-        text,
-        re.DOTALL
-    )
+    feedback_match = re.search(r"<feedback>(.*?)</feedback>", text, re.DOTALL | re.IGNORECASE)
+    score_match = re.search(r"<score>(.*?)</score>", text, re.DOTALL | re.IGNORECASE)
 
     if not feedback_match:
-        raise ValueError("Feedback block not found or malformed.")
+        raise ValueError("No <feedback>...</feedback> block found.")
     if not score_match:
-        raise ValueError("Score block not found or malformed.")
+        raise ValueError("No <score>...</score> block found.")
 
     feedback = feedback_match.group(1).strip()
     score_str = score_match.group(1).strip()
 
     try:
         score = int(score_str)
-    except ValueError:
-        raise ValueError(f"Score is not a valid integer: {score_str!r}")
+    except ValueError as e:
+        raise ValueError(f"Score is not a valid integer: {score_str!r}") from e
 
-    return feedback, score
+    return score, feedback
 
 
 # This tries to query the Baseten API setup running a modified version of Flow-Judge
@@ -170,8 +156,6 @@ def query_judge(previous_text, current_text):
         json=payload,
     )
 
-    # feedback, score = parse_featherjudge_response(resp.json()["text"])
-    feedback = resp.json()["text"]
-    score = 2
+    score, feedback = parse_featherjudge_response(resp.json()["text"])
 
     return score, feedback

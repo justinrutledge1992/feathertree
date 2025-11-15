@@ -20,7 +20,11 @@ def review_chapter(chapter_id):
         previous_text = current.content + "\n" + previous_text  # prepend previous content
 
     # Call LLM and generate score w/ feedback
-    score, feedback = query_judge(previous_text, chapter.content)
+    if settings.DEVELOPMENT_MODE == False:
+        score, feedback = query_judge(previous_text, chapter.content)
+    else:
+        score = 5
+        feedback = "Good job!"
 
     # Mark as published (draft=False) if the score exceeds some threshold
     if score > 2:
