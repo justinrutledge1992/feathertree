@@ -4,6 +4,7 @@ from django.utils.encoding import force_bytes
 from .tokens import account_activation_token
 from django.conf import settings
 import requests
+from requests.exceptions import RequestException, Timeout
 import re
 
 # Include any miscellanous helper functions here
@@ -149,13 +150,51 @@ def query_judge(previous_text, current_text):
         "top_p": 0.95,
         "top_k": 40
     }
+    
+    response = call_featherjudge(payload)
 
-    resp = requests.post(
-        f"https://model-{settings.FEATHERJUDGE_MODEL_ID}.api.baseten.co/{settings.BASETEN_DEPLOYMENT_TYPE}/predict",
-        headers={"Authorization": f"Api-Key {settings.BASETEN_API_KEY}"},
-        json=payload,
-    )
-
-    score, feedback = parse_featherjudge_response(resp.json()["text"])
+    score, feedback = parse_featherjudge_response(response)
 
     return score, feedback
+
+# Error-catching API calls to Baseten
+def call_featherjudge(payload):
+    url = (
+        f"https://model-{settings.FEATHERJUDGE_MODEL_ID}.api.baseten.co/{settings.BASETEN_DEPLOYMENT_TYPE}/predict"
+    )
+
+    try:
+        resp = requests.post(
+            url,
+            headers={"Authorization": f"Api-Key {settings.BASETEN_API_KEY}"},
+            json=payload,
+            timeout=30,   # <-- Time to wait for Baseten to respond (seconds). Most requests have taken < 5 seconds.
+            # ADJUST THE TIMEOUT TO BE LONGER IF MULTIPLE WORKERS ARE WORKING.
+            # This is 30 seconds mainly to prevent one worker from waiting too long and causing a bottleneck so it can move on.
+        )
+
+        resp.raise_for_status()  # raise HTTPError for 4xx/5xx
+
+        data = resp.json()       # may raise ValueError
+        text = data.get("text")  # in case key missing
+
+        if text is None:
+            raise KeyError("Missing 'text' in Baseten response")
+        
+        return text
+
+    except Timeout:
+        # Baseten took too long
+        return None, "The FeatherJudge model timed out while generating a response."
+
+    except RequestException as e:
+        # Network error, DNS failure, refused connection, 5xx, etc.
+        return None, f"Network error while calling FeatherJudge: {e}"
+
+    except (ValueError, KeyError) as e:
+        # Malformed JSON or missing fields
+        return None, f"Invalid response from FeatherJudge: {e}"
+
+    except Exception as e:
+        # Catch-all for anything unexpected so Celery won't crash
+        return None, f"Unexpected error while calling FeatherJudge: {e}"

@@ -21,7 +21,13 @@ def review_chapter(chapter_id):
 
     # Call LLM and generate score w/ feedback
     if settings.DEVELOPMENT_MODE == False:
-        score, feedback = query_judge(previous_text, chapter.content)
+        try:
+            score, feedback = query_judge(previous_text, chapter.content)
+        except:
+            score = 0
+            feedback = "Error querying review system."
+            chapter.submitted_for_review = False
+            chapter.save()
     else:
         score = 5
         feedback = "Good job!"
@@ -29,8 +35,6 @@ def review_chapter(chapter_id):
     # Mark as published (draft=False) if the score exceeds some threshold
     if score > 2:
         chapter.draft = False
-    else:
-        chapter.draft = True
 
     # Store score & feedback and indicate review is complete:
     chapter.score = score

@@ -178,18 +178,6 @@ def chapter_view(request, chapter_id):
         },
     )
 
-def chapter_publish(request, chapter_id):
-    chapter = get_object_or_404(Chapter, pk=chapter_id)
-
-    if not request.user.is_authenticated or request.user != chapter.author:
-        return redirect("feathertree:chapter_view", chapter_id=chapter.id)
-
-    # Example logic: mark for moderation
-    chapter.submitted_for_review = True
-    chapter.save()
-    messages.success(request, "Your publication request has been sent for review.")
-    return redirect("feathertree:chapter_view", chapter_id=chapter.id)
-
 # Static pages:
 def new_user_instructions(request):
     return render(request, "feathertree/new_user_instructions.html")

@@ -19,7 +19,6 @@ urlpatterns = [
     path("story/<int:chapter_id>/view", views.story_view, name="story_view"),
     path("chapter/<int:prev_chapter_id>/create", views.chapter_create, name="chapter_create"),
     path("chapter/<int:chapter_id>/view", views.chapter_view, name="chapter_view"),
-    path("chapter/<int:chapter_id>/publish", views.chapter_publish, name="chapter_publish"),
 
     # Static Page URLs:
     path("user/new-user-instructions", views.new_user_instructions, name="new_user_instructions"),
