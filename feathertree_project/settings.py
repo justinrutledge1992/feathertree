@@ -26,8 +26,15 @@ load_dotenv()
 
 DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# SECURITY WARNING: keep the keys used in production secret!
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", get_random_secret_key())
+BASETEN_API_KEY = os.getenv("BASETEN_API_KEY", "No key provided.")
+
+# BASETEN SETTINGS:
+BASETEN_DEPLOYMENT_TYPE = "production" # this is eventually included as part of the Baseten API endpoint URL
+if DEVELOPMENT_MODE == False:
+    BASETEN_DEPLOYMENT_TYPE = "production"
+FEATHERJUDGE_MODEL_ID = os.getenv("FEATHERJUDGE_MODEL_ID", "rwny1n13") # defaults to original model ID
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"
@@ -86,7 +93,7 @@ WSGI_APPLICATION = 'feathertree_project.wsgi.application'
 #  If true, use SQLite 3 bindings
 #  If false, use the production environemnt's DB info
 #  The comparison at the end of the first line is evaluated to convert a string to a boolean
-if DEVELOPMENT_MODE is True:
+if DEVELOPMENT_MODE == True:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -160,7 +167,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
     # The EMAIL_HOST_USER and EMAIL_HOST_PASSWORD settings, if set, are used to authenticate to the SMTP server,
     # and the EMAIL_USE_TLS and EMAIL_USE_SSL settings control whether a secure connection is used.
     # The character set of email sent with django.core.mail will be set to the value of your DEFAULT_CHARSET setting.
-if DEVELOPMENT_MODE is True: # set all Vars to the env or to None, and don't throw any errors if None
+if DEVELOPMENT_MODE == True: # set all Vars to the env or to None, and don't throw any errors if None
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend" # use console output in development
 elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic': # this prevents the static site from throwing errors at build-phase
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend" # use SMTP backend in production

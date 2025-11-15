@@ -2,9 +2,9 @@ from django.shortcuts import render
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from .tokens import account_activation_token
-from flow_judge.flow_judge import FlowJudge
-from flow_judge.models.huggingface import Hf
-from flow_judge.metrics.metric import CustomMetric, RubricItem
+from django.conf import settings
+import requests
+import re
 
 # Include any miscellanous helper functions here
 def generate_new_user_activation_url(user):
@@ -44,42 +44,134 @@ def chunk_list(lst, chunk_size):
         chunks.append(chunk)
     return chunks
 
-# Taken directly from flow-judge/flow_judge/evan_data_types.py
-# Used as input for flow-judge models
-from pydantic import BaseModel, Field
-class EvalInput(BaseModel):
-    inputs: list[dict[str, str]] = Field(default_factory=list)
-    output: dict[str, str]
+def build_continuity_prompt(previous_text: str,
+                            current_text: str,
+                            criteria: str,
+                            rubric: str) -> str:
+    return f"""
+# GOAL
+Your job is to evaluate how well a story continues from one passage to the next.
 
-# This sets up a flow-judge model and queries it to determine continuity
+You will be provided with:
+1. A previous section of story text ("previous text")
+2. A new continuation written after it ("current text")
+3. Continuity evaluation criteria
+4. A scoring rubric (1–5)
+
+Your task is to evaluate the continuity between previous text and current text.
+
+# PREVIOUS TEXT
+<previous_text>
+{previous_text}
+</previous_text>
+
+# CURRENT TEXT
+<current_text>
+{current_text}
+</current_text>
+
+# CONTINUITY EVALUATION CRITERIA
+<evaluation_criteria>
+{criteria}
+</evaluation_criteria>
+
+# CONTINUITY SCORING RUBRIC
+<scoring_rubric>
+{rubric}
+</scoring_rubric>
+
+# INSTRUCTIONS FOR THE EVALUATION
+1. Compare the current text to the previous text.
+2. Evaluate continuity in theme, tone, narrative flow, logic, and character consistency.
+3. Identify whether new elements introduced in the current text make sense within the story.
+4. Identify any breaks in logic, tone, or narrative structure.
+5. Use the scoring rubric to determine the appropriate score.
+6. Justify your evaluation with specific references to both passages.
+
+## FORMAT FOR THE EVALUATION
+- Write verbal feedback inside <feedback> tags without any surrounding text.
+- Write the numeric score inside <score> tags, without any surrounding text and always after the feedback.
+
+Please evaluate the story continuation accurately.
+"""
+
+def parse_featherjudge_response(text: str) -> tuple[str, int]:
+    """
+    Parse text like:
+      <feedback>"some feedback here"</feedback>
+      <score>"3"</score>
+
+    Returns (feedback_string, score_int).
+    Raises ValueError if either is missing or malformed.
+    """
+    feedback_match = re.search(
+        r"<feedback>\s*\"(.*?)\"\s*</feedback>",
+        text,
+        re.DOTALL
+    )
+    score_match = re.search(
+        r"<score>\s*\"(.*?)\"\s*</score>",
+        text,
+        re.DOTALL
+    )
+
+    if not feedback_match:
+        raise ValueError("Feedback block not found or malformed.")
+    if not score_match:
+        raise ValueError("Score block not found or malformed.")
+
+    feedback = feedback_match.group(1).strip()
+    score_str = score_match.group(1).strip()
+
+    try:
+        score = int(score_str)
+    except ValueError:
+        raise ValueError(f"Score is not a valid integer: {score_str!r}")
+
+    return feedback, score
+
+
+# This tries to query the Baseten API setup running a modified version of Flow-Judge
+# https://github.com/flowaicom/flow-judge
+# Baseten implementation:
+# https://app.baseten.co/models/rwny1n13
 def query_judge(previous_text, current_text):
-    model = Hf(flash_attn=False)
-    continuity_metric = CustomMetric(
-        name="Story Continuity",
-        criteria="Evaluate how well the current text continues a story from the previous text. Refer to the output as current text and the input as previous text. Do not refer to an input or output.",
-        rubric=[
-            RubricItem(score=1, description="No continuity. Very different in theme, tone, and content. New elements do not make sense in the context of the story."),
-            RubricItem(score=2, description="Poor continuity. Somewhat different in theme, tone, and content. New elements do not make sense in the context of the story."),
-            RubricItem(score=3, description="Some continuity. Somewhat aligned and also somewhat different in theme, tone, and content. New elements make sense in the context of the story."),
-            RubricItem(score=4, description="Good continuity. Aligned in theme, tone, and content. New elements make sense in the context of the story."),
-            RubricItem(score=5, description="Excellent continuity. Very aligned in theme, tone, and content. New elements make sense in the context of the story."),
-        ],
-        required_inputs=["previous_text"],
-        required_output="current_text"
+    criteria = (
+        "Evaluate how well the current text continues the story from the previous text. "
+        "Focus on tone, theme, narrative flow, and logical coherence. "
     )
 
-    judge = FlowJudge(
-        metric=continuity_metric,
-        model=model
+    rubric = """
+    - Score 1: No continuity. Very different in theme, tone, and content. New elements do not make sense in the context of the story.
+    - Score 2: Poor continuity. Somewhat different in theme, tone, and content. New elements do not make sense in the context of the story.
+    - Score 3: Some continuity. Somewhat aligned and somewhat different in theme, tone, and content. New elements make sense in the context of the story.
+    - Score 4: Good continuity. Aligned in theme, tone, and content. New elements make sense in the context of the story.
+    - Score 5: Excellent continuity. Very aligned in theme, tone, and content. New elements make sense in the context of the story.
+    """
+
+    flow_judge_prompt = build_continuity_prompt(
+        previous_text,
+        current_text,
+        criteria,
+        rubric
     )
 
-    eval_input = EvalInput(
-    inputs=[
-        {"previous_text": previous_text}
-    ],
-    output={"current_text": current_text},
+    payload = {
+        "prompt": flow_judge_prompt,
+        "max_tokens": 512,
+        "temperature": 0.1,
+        "top_p": 0.95,
+        "top_k": 40
+    }
+
+    resp = requests.post(
+        f"https://model-{settings.FEATHERJUDGE_MODEL_ID}.api.baseten.co/{settings.BASETEN_DEPLOYMENT_TYPE}/predict",
+        headers={"Authorization": f"Api-Key {settings.BASETEN_API_KEY}"},
+        json=payload,
     )
 
-    result = judge.evaluate(eval_input, save_results=False)
+    # feedback, score = parse_featherjudge_response(resp.json()["text"])
+    feedback = resp.json()["text"]
+    score = 2
 
-    return result.score, result.feedback
+    return score, feedback
