@@ -42,11 +42,11 @@
           Saving your changes will also submit this chapter for review.
         {% endif %}
       </div>
-      {% if chapter.feedback %}
-      <div class="notice notice-draft">
-        <strong>Chapter Declined:</strong>
-        {{ chapter.feedback }}
-      </div>
+      {% if not chapter.submitted_for_review and chapter.feedback %}
+        <div class="notice notice-draft">
+          <strong>Chapter Declined:</strong>
+          {{ chapter.feedback }}
+        </div>
       {% endif %}
     {% endif %}
 
