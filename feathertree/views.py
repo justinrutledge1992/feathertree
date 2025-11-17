@@ -10,9 +10,7 @@ from .mailers import send_new_user_confirmation_email
 from .tokens import account_activation_token
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
-from django.contrib import messages
 from .tasks import review_chapter
-import re
 
 def index(request):
     stories_qs = (

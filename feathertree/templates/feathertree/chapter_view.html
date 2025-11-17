@@ -63,6 +63,15 @@
             <small>After submitting for review, editing will be disabled until a moderator responds.</small>
           </p>
         </section>
+      {% else %}
+        {% if chapter.submitted_for_review %}
+          <!-- UNPUBLISHED & UNEDITABLE: show read-only content -->
+          <section class="section-block section-content emphasis">
+            <div class="chapter-content">
+              {{ chapter.content|safe }}
+            </div>
+          </section>
+        {% endif %}
       {% endif %}
     {% else %}
       <!-- PUBLISHED: show read-only content -->

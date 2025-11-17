@@ -34,8 +34,12 @@ def review_chapter(chapter_id):
             chapter.submitted_for_review = False
             chapter.save()
     else:
-        score = 5
-        feedback = "Good job!"
+        if chapter.content == "fail":
+            score = 1
+            feedback = "Terrible job!"
+        else:
+            score = 5
+            feedback = "Great job!"
 
     # Mark as published (draft=False) if the score exceeds some threshold
     # And update the story last_updated field
