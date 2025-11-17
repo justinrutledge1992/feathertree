@@ -3,7 +3,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 from .managers import UserManager
-import datetime
 
 # Field Classes
 # These are all Django class extensions & Django method overrides
@@ -47,6 +46,7 @@ class User(AbstractUser):
 # A Story is a set of chapters
 class Story(models.Model):
     title = models.CharField(max_length=250) # Story titles are required
+    last_updated = models.DateTimeField(auto_now=True) # Tracks when last chapter was successfully added...
     def __str__(self):
         return self.title
 

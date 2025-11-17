@@ -1,0 +1,85 @@
+{% extends "feathertree/base.html" %}
+
+{% block head %}
+<title>Feathertree ⋅ {{ story.title|default:"Untitled Story" }}</title>
+<meta name="description" content="Read branching chapters from {{ story.title }} on Feathertree.">
+{% endblock head %}
+
+{% block body %}
+{% include "feathertree/_header.html" %}
+
+<main class="container content story-page">
+
+  {# --- Story header / summary --- #}
+  <section class="story-header-block">
+    <a class="back-link" href="{% url 'feathertree:index' %}">← Back to stories</a>
+
+    <h1 class="story-title">
+      {{ story.title|default:"Untitled Story" }}
+    </h1>
+
+    <p class="story-meta">
+      <span>by {{ story.author.display_name|default:story.author.username }}</span>
+      {% if story.updated_at %}
+        · <span>Updated {{ story.updated_at|date:"F j, Y" }}</span>
+      {% endif %}
+    </p>
+  </section>
+
+  <section class="branching-section">
+    <header class="branching-header">
+      <h2>Branching Chapters</h2>
+      <p class="branching-subtitle">
+        Each column represents a chapter number. Some chapters have multiple branches —
+        choose a path and follow it through the story.
+      </p>
+    </header>
+
+    {% if chapters %}
+      {% regroup chapters by ordinal as ordinal_groups %}
+
+      <div class="chapter-grid" aria-label="Branching chapters">
+        {% for group in ordinal_groups %}
+          <section class="chapter-column">
+            <header class="chapter-column-header">
+              <h3>Chapter {{ group.grouper }}</h3>
+              <span class="chapter-count">
+                {{ group.list|length }} version{{ group.list|length|pluralize }}
+              </span>
+            </header>
+
+            <ul class="chapter-column-list">
+              {% for chapter in group.list %}
+                <li class="chapter-card">
+                  <h4 class="chapter-card-title">
+                    <a href="{% url 'feathertree:chapter_view' chapter.id %}">
+                      {{ chapter.title|default:"Untitled" }}
+                    </a>
+                  </h4>
+                  <p class="chapter-card-meta">
+                    <span>by {{ chapter.author.display_name|default:chapter.author.username }}</span>
+                    {% if chapter.timestamp %}
+                      · <span>{{ chapter.timestamp|date:"M j, Y" }}</span>
+                    {% endif %}
+                  </p>
+                  <div class="chapter-card-actions">
+                    <a
+                      href="{% url 'feathertree:chapter_view' chapter.id %}"
+                      class="btn tertiary small"
+                    >
+                      Read this branch
+                    </a>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          </section>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p><em>No chapters yet.</em></p>
+    {% endif %}
+  </section>
+
+</main>
+{% endblock body %}

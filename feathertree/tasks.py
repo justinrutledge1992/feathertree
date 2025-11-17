@@ -3,6 +3,10 @@ from django.conf import settings
 from celery import shared_task
 from .models import Chapter
 from .helpers import query_judge
+import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 @shared_task
 def review_chapter(chapter_id):
@@ -24,6 +28,7 @@ def review_chapter(chapter_id):
         try:
             score, feedback = query_judge(previous_text, chapter.content)
         except:
+            logger.exception("Error in query_judge for chapter with ID: %s", chapter_id)
             score = 0
             feedback = "Error querying review system."
             chapter.submitted_for_review = False
@@ -33,8 +38,14 @@ def review_chapter(chapter_id):
         feedback = "Good job!"
 
     # Mark as published (draft=False) if the score exceeds some threshold
+    # And update the story last_updated field
     if score > 2:
+        timestamp = datetime.date.today()
         chapter.draft = False
+        chapter.timestamp = timestamp
+        story = chapter.story
+        story.last_updated = timestamp
+        story.save()
 
     # Store score & feedback and indicate review is complete:
     chapter.score = score

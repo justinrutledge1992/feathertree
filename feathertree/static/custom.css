@@ -343,3 +343,251 @@
   list-style-type: none;
   padding: 0.2em 0;
 }
+
+/* --- Index: Recently Updated Stories --- */
+
+.story-list-section {
+  margin-top: 3rem;
+}
+
+.story-list-header h2 {
+  margin: 0;
+}
+
+.story-list-subtitle {
+  margin-top: 0.25rem;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.story-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.story-card {
+  background: #f9fafb;
+  border: 1px solid #e4e4e4;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.story-card-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.25rem;
+}
+
+.story-card-title a {
+  text-decoration: none;
+  color: #0d47a1;
+}
+
+.story-card-title a:hover {
+  color: #1266e2;
+}
+
+.story-meta {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 0.5rem;
+}
+
+.story-summary {
+  margin: 0;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* --- Pagination controls --- */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.page-link {
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+.page-link:hover {
+  border-color: #3a7bd5;
+}
+
+.page-link.disabled {
+  opacity: 0.5;
+  cursor: default;
+  border-color: transparent;
+}
+
+.page-info {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+
+/* --- Story view layout --- */
+
+.story-page {
+  margin-top: 2rem;
+}
+
+.story-header-block {
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 1.5rem 1.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2.5rem;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: #666666;
+}
+
+.back-link:hover {
+  color: #0d47a1;
+}
+
+.story-title {
+  margin: 0 0 0.3rem;
+}
+
+.story-meta {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: #666666;
+}
+
+.story-summary {
+  margin: 0 0 1rem;
+  color: #333333;
+}
+
+.story-actions {
+  margin-top: 0.5rem;
+}
+
+/* --- Branching chapters --- */
+
+.branching-section {
+  margin-top: 1rem;
+}
+
+.branching-header h2 {
+  margin: 0;
+}
+
+.branching-subtitle {
+  margin: 0.35rem 0 1.25rem;
+  font-size: 0.95rem;
+  color: #666666;
+}
+
+.chapter-grid {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.chapter-column {
+  min-width: 220px;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  border: 1px solid #e4e4e4;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  flex: 0 0 auto;
+}
+
+.chapter-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.75rem;
+}
+
+.chapter-column-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.chapter-count {
+  font-size: 0.85rem;
+  color: #777777;
+}
+
+.chapter-column-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.chapter-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #e4e4e4;
+}
+
+.chapter-card-title {
+  margin: 0 0 0.15rem;
+  font-size: 0.95rem;
+}
+
+.chapter-card-title a {
+  text-decoration: none;
+  color: #0d47a1;
+}
+
+.chapter-card-title a:hover {
+  color: #1266e2;
+}
+
+.chapter-card-meta {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  color: #777777;
+}
+
+.chapter-card-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* --- Button variants used on story view --- */
+
+.btn.small {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.btn.tertiary {
+  background-color: transparent;
+  border: 1px solid #d0d0d0;
+  color: #333333;
+}
+
+.btn.tertiary:hover {
+  border-color: #3a7bd5;
+  color: #0d47a1;
+}

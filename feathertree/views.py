@@ -2,6 +2,7 @@ from django.contrib.auth import login
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
 from django.urls import reverse
+from django.core.paginator import Paginator
 from .models import User, Story, Chapter
 from .forms import UserCreationForm, StoryCreationForm, ChapterCreationForm
 from .helpers import form_invalid_response, form_invalid_response_w_msg
@@ -14,7 +15,20 @@ from .tasks import review_chapter
 import re
 
 def index(request):
-    return render(request, "feathertree/index.html")
+    stories_qs = (
+        Story.objects
+        .order_by("-last_updated")
+    )
+
+    paginator = Paginator(stories_qs, 10)  # 10 stories per page, make user-adjustable later
+    page_number = request.GET.get("page")
+    stories_page = paginator.get_page(page_number)
+
+    print(stories_page)
+    
+    return render(request, "feathertree/index.html", {
+        "stories_page": stories_page,
+    })
 
 # User Views
 def user_create(request):
@@ -91,6 +105,17 @@ def story_create(request):
     else:
         form = StoryCreationForm()
         return render(request, "feathertree/story_create.html", {"form": form})
+    
+def story_view(request, story_id):
+    story = get_object_or_404(Story, pk=story_id)
+    chapters = (
+        Chapter.objects
+        .filter(story=story)
+        .order_by("ordinal", "timestamp")
+    )
+    
+    return render(request,"feathertree/story_view.html",{"story": story,"chapters": chapters})
+
 
 # Used to create a chapter beyond the first one
 def chapter_create(request, prev_chapter_id):
@@ -106,6 +131,8 @@ def chapter_create(request, prev_chapter_id):
             new_chapter.ordinal = (prev_chapter.ordinal) + 1
             new_chapter.previous_chapter = prev_chapter  # point this new chapter to the previous chapter in the database
             new_chapter.save()
+            story.last_updated = new_chapter.timestamp
+            story.save()
             return redirect("feathertree:chapter_view", chapter_id=new_chapter.id)
         # fallback: render with errors
         else:

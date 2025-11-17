@@ -6,6 +6,9 @@ from django.conf import settings
 import requests
 from requests.exceptions import RequestException, Timeout
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Include any miscellanous helper functions here
 def generate_new_user_activation_url(user):
@@ -96,15 +99,51 @@ Your task is to evaluate the continuity between previous text and current text.
 Please evaluate the story continuation accurately.
 """
 
-def parse_featherjudge_response(text: str) -> tuple[str, int]:
-    # Parse <feedback>...</feedback> and <score>...</score> from a string.
+def parse_featherjudge_response(text: str) -> tuple[int, str]:
+    """
+    Parse <feedback>...</feedback> and <score>...</score> from a string.
 
-    feedback_match = re.search(r"<feedback>(.*?)</feedback>", text, re.DOTALL | re.IGNORECASE)
-    score_match = re.search(r"<score>(.*?)</score>", text, re.DOTALL | re.IGNORECASE)
+    Returns:
+        (score, feedback)
+
+    Raises:
+        TypeError: if `text` is not a string.
+        ValueError: if feedback/score blocks are missing or score is not an int.
+    """
+    # Guard against accidentally passing a tuple or other type
+    if not isinstance(text, str):
+        logger.error(
+            "parse_featherjudge_response expected a string, got %r: %r",
+            type(text),
+            text,
+        )
+        raise TypeError(
+            f"parse_featherjudge_response expected a string, got {type(text)!r}"
+        )
+
+    # Try to extract feedback and score blocks
+    feedback_match = re.search(
+        r"<feedback>(.*?)</feedback>", text, re.DOTALL | re.IGNORECASE
+    )
+    score_match = re.search(
+        r"<score>(.*?)</score>", text, re.DOTALL | re.IGNORECASE
+    )
 
     if not feedback_match:
+        # Log a snippet so you can see what the model actually returned
+        logger.error(
+            "No <feedback>...</feedback> block found in FeatherJudge response. "
+            "First 500 chars: %r",
+            text[:500],
+        )
         raise ValueError("No <feedback>...</feedback> block found.")
+
     if not score_match:
+        logger.error(
+            "No <score>...</score> block found in FeatherJudge response. "
+            "First 500 chars: %r",
+            text[:500],
+        )
         raise ValueError("No <score>...</score> block found.")
 
     feedback = feedback_match.group(1).strip()
@@ -113,9 +152,59 @@ def parse_featherjudge_response(text: str) -> tuple[str, int]:
     try:
         score = int(score_str)
     except ValueError as e:
+        # This gives you full traceback + context in DO logs
+        logger.exception(
+            "Score is not a valid integer. Got %r from response. "
+            "First 500 chars of response: %r",
+            score_str,
+            text[:500],
+        )
         raise ValueError(f"Score is not a valid integer: {score_str!r}") from e
 
     return score, feedback
+
+# Creates Baseten API call to the LLM
+def call_featherjudge(payload):
+    url = (
+        f"https://model-{settings.FEATHERJUDGE_MODEL_ID}.api.baseten.co/"
+        f"{settings.BASETEN_DEPLOYMENT_TYPE}/predict"
+    )
+
+    try:
+        resp = requests.post(
+            url,
+            headers={"Authorization": f"Api-Key {settings.BASETEN_API_KEY}"},
+            json=payload,
+            timeout=30,
+        )
+
+        resp.raise_for_status()
+        data = resp.json()
+        text = data.get("text")
+
+        if text is None:
+            logger.error(
+                "FeatherJudge response missing 'text' key. Full JSON: %r", data
+            )
+            raise KeyError("Missing 'text' in Baseten response")
+
+        return text
+
+    except Timeout:
+        logger.warning("FeatherJudge request timed out for URL %s", url, exc_info=True)
+        return None, "The FeatherJudge model timed out while generating a response."
+
+    except RequestException as e:
+        logger.exception("Network error while calling FeatherJudge at %s", url)
+        return None, f"Network error while calling FeatherJudge: {e}"
+
+    except (ValueError, KeyError) as e:
+        logger.exception("Invalid or malformed FeatherJudge response from %s", url)
+        return None, f"Invalid response from FeatherJudge: {e}"
+
+    except Exception as e:
+        logger.exception("Unexpected error while calling FeatherJudge at %s", url)
+        return None, f"Unexpected error while calling FeatherJudge: {e}"
 
 
 # This tries to query the Baseten API setup running a modified version of Flow-Judge
@@ -156,45 +245,3 @@ def query_judge(previous_text, current_text):
     score, feedback = parse_featherjudge_response(response)
 
     return score, feedback
-
-# Error-catching API calls to Baseten
-def call_featherjudge(payload):
-    url = (
-        f"https://model-{settings.FEATHERJUDGE_MODEL_ID}.api.baseten.co/{settings.BASETEN_DEPLOYMENT_TYPE}/predict"
-    )
-
-    try:
-        resp = requests.post(
-            url,
-            headers={"Authorization": f"Api-Key {settings.BASETEN_API_KEY}"},
-            json=payload,
-            timeout=30,   # <-- Time to wait for Baseten to respond (seconds). Most requests have taken < 5 seconds.
-            # ADJUST THE TIMEOUT TO BE LONGER IF MULTIPLE WORKERS ARE WORKING.
-            # This is 30 seconds mainly to prevent one worker from waiting too long and causing a bottleneck so it can move on.
-        )
-
-        resp.raise_for_status()  # raise HTTPError for 4xx/5xx
-
-        data = resp.json()       # may raise ValueError
-        text = data.get("text")  # in case key missing
-
-        if text is None:
-            raise KeyError("Missing 'text' in Baseten response")
-        
-        return text
-
-    except Timeout:
-        # Baseten took too long
-        return None, "The FeatherJudge model timed out while generating a response."
-
-    except RequestException as e:
-        # Network error, DNS failure, refused connection, 5xx, etc.
-        return None, f"Network error while calling FeatherJudge: {e}"
-
-    except (ValueError, KeyError) as e:
-        # Malformed JSON or missing fields
-        return None, f"Invalid response from FeatherJudge: {e}"
-
-    except Exception as e:
-        # Catch-all for anything unexpected so Celery won't crash
-        return None, f"Unexpected error while calling FeatherJudge: {e}"
