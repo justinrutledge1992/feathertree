@@ -2,6 +2,9 @@
 
 {% block head %}
 {% load static %}
+{% block extra_scripts %}
+  <script src="{% static 'toggle_chapters.js' %}?v={{ STATIC_VERSION }}"></script>
+{% endblock %}
 <title>Feathertree ⋅ {{ profile_user.display_name }}</title>
 <meta name="description" content="">
 <meta name="keywords" content="">
@@ -10,44 +13,18 @@
 {% block body %}
 {% include "feathertree/_header.html" %}
 
-<div class="profile content">
-    <h4>{{ profile_user.display_name }}'s Feathertree</h4>
-    <h5>Stories & Chapters</h5>
+<main class="container content profile">
+  <h4>{{ profile_user.display_name }}'s Feathertree</h4>
+  <h5>Stories & Chapters</h5>
 
-    {% regroup chapters by story as story_groups %}
-
-    {% if story_groups %}
-        {% for group in story_groups %}
-            <div class="story-group">
-                <div class="story-header" onclick="toggleChapters('{{ group.grouper.id }}')" role="button" tabindex="0" aria-controls="chapters-{{ group.grouper.id }}" aria-expanded="false">
-                    <span>{{ group.grouper.title }}</span>
-                    <span>({{ group.list|length }} chapter{{ group.list|length|pluralize }})</span>
-                </div>
-                <ul id="chapters-{{ group.grouper.id }}" class="chapter-list">
-                    {% for chapter in group.list %}
-                        <li>
-                            <a href="{% url 'feathertree:chapter_view' chapter.id %}">
-                                Chapter {{ chapter.ordinal }}:
-                                {{ chapter.title|default:"Untitled" }}
-                            </a>
-                            <small>· {{ chapter.timestamp|date:"F j, Y" }}</small>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p><em>No chapters yet.</em></p>
-    {% endif %}
-</div>
-
-<script>
-function toggleChapters(storyId) {
-    const list = document.getElementById(`chapters-${storyId}`);
-    const opened = list.classList.toggle("open");
-    const header = list?.previousElementSibling;
-    if (header) header.setAttribute('aria-expanded', opened ? 'true' : 'false');
-}
-</script>
-
+  {% if story_groups %}
+    <ul class="story-list profile-story-list">
+    {% for group in story_groups %}
+        {% include "feathertree/_story_card.html" with story=group.story chapters=group.chapters is_collapsible=True %}
+    {% endfor %}
+    </ul>
+  {% else %}
+    <p><em>No chapters yet.</em></p>
+  {% endif %}
+</main>
 {% endblock body %}

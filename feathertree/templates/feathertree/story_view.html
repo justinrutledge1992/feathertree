@@ -1,6 +1,9 @@
 {% extends "feathertree/base.html" %}
 
 {% load static %}
+{% block extra_scripts %}
+    <script src="{% static 'story_tree.js' %}?v={{ STATIC_VERSION }}"></script>
+{% endblock %}
 
 {% block head %}
 <title>Feathertree ⋅ {{ story.title|default:"Untitled Story" }}</title>
@@ -56,6 +59,3 @@
 
 </main>
 {% endblock body %}
-{% block extra_scripts %}
-    <script src="{% static 'story_tree.js' %}?v={{ STATIC_VERSION }}"></script>
-{% endblock %}

@@ -20,19 +20,7 @@
     {% if stories_page and stories_page.object_list %}
       <ul class="story-list">
         {% for story in stories_page %}
-          <li class="story-card">
-            <h3 class="story-card-title">
-              <a href="{% url 'feathertree:story_view' story.id %}">
-                {{ story.title|default:"Untitled Story" }}
-              </a>
-            </h3>
-            <p class="story-meta">
-              {% if story.last_updated %}
-                · <span>{{ story.last_updated|date:"F j, Y" }}</span>
-              {% endif %}
-            </p>
-            {# Include story summary here if wanted... update with LLM too? #}
-          </li>
+          {% include "feathertree/_story_card.html" with story=story is_collapsible=False %}
         {% endfor %}
       </ul>
 
@@ -56,7 +44,6 @@
           {% endif %}
         </nav>
       {% endif %}
-
     {% else %}
       <p><em>No stories have been published yet.</em>
         {% if user.is_authenticated %}
@@ -65,6 +52,5 @@
       </p>
     {% endif %}
   </section>
-
 </main>
 {% endblock body %}

@@ -600,7 +600,7 @@
   display: block;
 }
 
-/* Remove bullets and control indentation */
+/* Remove bullets and control indentation for the tree */
 .chapter-tree,
 .chapter-tree ul {
   list-style: none;
@@ -619,7 +619,10 @@
   gap: 0.5rem;
 }
 
-/* Arrow button with a little block around it */
+/* ============= */
+/*   TREE ARROW  */
+/* ============= */
+
 .chapter-toggle {
   display: flex;
   align-items: center;
@@ -628,11 +631,11 @@
   width: 1.4rem;
   height: 1.4rem;
 
-  background: var(--bg-alt) !important;   /* SimpleCSS alt background */
+  background: var(--bg-alt) !important;
   border: 1px solid var(--border) !important;
-  border-radius: 4px;                     /* small rounded edges */
+  border-radius: 4px;
 
-  color: var(--accent) !important;        /* arrow color */
+  color: var(--accent) !important;
   cursor: pointer;
 
   font-size: 1rem;
@@ -648,15 +651,15 @@
     transform 0.15s ease;
 }
 
-/* Hover effect (SimpleCSS-inspired) */
+/* Hover effect */
 .chapter-toggle:hover,
 .chapter-toggle:focus {
-  background: var(--accent-bg) !important;  /* SimpleCSS hover background */
+  background: var(--accent-bg) !important;
   border-color: var(--accent) !important;
   color: var(--text) !important;
 }
 
-/* When open, rotate arrow */
+/* Rotate arrow for open state */
 .chapter-toggle.is-open {
   transform: rotate(90deg);
   background: var(--accent-bg) !important;
@@ -664,14 +667,14 @@
   color: var(--text) !important;
 }
 
-/* Spacer for nodes without children (still align text) */
+/* Spacer for leaf nodes */
 .chapter-toggle-spacer {
   width: 1.4rem;
   height: 1.4rem;
   visibility: hidden;
 }
 
-/* Pill around each chapter's text */
+/* Pill around chapter text in tree */
 .chapter-node-pill {
   background: var(--bg-alt);
   border: 1px solid var(--border);
@@ -682,21 +685,193 @@
   gap: 0.15rem;
 }
 
-/* Title line */
 .chapter-link-title {
   font-weight: 600;
   text-decoration: none;
   color: var(--text);
 }
 
-/* Keep SimpleCSS-like hover */
 .chapter-link-title:hover,
 .chapter-link-title:focus {
   text-decoration: underline;
 }
 
-/* Meta line inside the pill: smaller, slightly muted */
 .chapter-node-pill .chapter-meta {
   font-size: 0.85rem;
   opacity: 0.8;
+}
+
+/* ============================= */
+/*  PROFILE PAGE STORY CARD CSS  */
+/* ============================= */
+
+.story-card--collapsible .story-card-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+/* Left-side caret button for collapsible cards */
+/* Pill-box arrow toggle for collapsible story cards */
+.story-card-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 1.4rem;
+  height: 1.4rem;
+
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+
+  color: var(--accent);
+  cursor: pointer;
+
+  font-size: 1rem;
+  line-height: 1rem;
+
+  padding: 0;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+/* Hover/focus highlight */
+.story-card-toggle:hover,
+.story-card-toggle:focus {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* Rotate arrow when open */
+.story-card-toggle-icon.is-open {
+  transform: rotate(90deg);
+}
+
+.story-card-toggle-icon {
+  transition: transform 0.15s ease;
+}
+
+/* Card header text + metadata */
+.story-card--collapsible .story-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  cursor: default; /* no longer clickable */
+}
+
+.story-card--collapsible .story-meta {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.story-card-count {
+  font-style: italic;
+}
+
+/* Chapter list inside story cards */
+.story-card .chapter-list {
+  margin-top: 0.5rem;
+  padding-left: 1.25rem;
+  display: none;  /* JS toggles .open */
+}
+
+.story-card .chapter-list.open {
+  display: block;
+}
+
+.story-card .chapter-list li {
+  margin-bottom: 0.25rem;
+}
+
+/* Screen reader helpers */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Pill with internal arrow (story tree version, inside pill box) */
+.chapter-pill--with-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+}
+
+/* Keep overall pill styling */
+.chapter-node-pill {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+/* A nested wrapper so arrow + text align cleanly */
+.chapter-pill--with-toggle .chapter-pill-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+/* Arrow inside the pill */
+.chapter-pill--with-toggle .chapter-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 1.4rem;
+  height: 1.4rem;
+
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+
+  color: var(--accent);
+  cursor: pointer;
+
+  padding: 0;
+  flex-shrink: 0;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.chapter-pill--with-toggle .chapter-toggle:hover,
+.chapter-pill--with-toggle .chapter-toggle:focus {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.chapter-pill--with-toggle .chapter-toggle.is-open {
+  transform: rotate(90deg);
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* For pills that include a toggle, align arrow + text horizontally */
+.chapter-node-pill.chapter-pill--with-toggle {
+  flex-direction: row;
+  align-items: flex-start;  /* or center if you prefer */
+  gap: 0.5rem;
 }

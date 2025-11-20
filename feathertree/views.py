@@ -11,6 +11,7 @@ from .tokens import account_activation_token
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from .tasks import review_chapter
+from itertools import groupby
 import os
 
 def index(request):
@@ -41,15 +42,27 @@ def user_create(request):
 def user_profile(request, user_id):
     profile_user = get_object_or_404(User, pk=user_id)
 
-    # Fetch all chapters written by this user, along with their stories
     chapters = (
         Chapter.objects
         .filter(author=profile_user)
-        .select_related("story")
-        .order_by("story__title", "ordinal")
+        .select_related('story')
+        .order_by('story_id', 'ordinal')
     )
 
-    return render(request,"feathertree/user_profile.html",{"profile_user": profile_user,"chapters": chapters})
+    story_groups = []
+    for story, chapter_iter in groupby(chapters, key=lambda c: c.story):
+        chapter_list = list(chapter_iter)
+        story_groups.append({
+            "story": story,
+            "chapters": chapter_list,
+        })
+
+    return render(request, "feathertree/user_profile.html", {
+        "profile_user": profile_user,
+        "story_groups": story_groups,
+    })
+
+
 
 def user_deactivate(request, user_id):
     if not request.user.is_authenticated:

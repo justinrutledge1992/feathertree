@@ -1,0 +1,72 @@
+{# feathertree/_story_card.html #}
+<li class="story-card{% if is_collapsible %} story-card--collapsible{% endif %}">
+  {% if is_collapsible %}
+    <div class="story-card-inner">
+        {# LEFT: toggle button #}
+        <button
+            type="button"
+            class="story-card-toggle"
+            id="story-toggle-{{ story.id }}"
+            onclick="toggleChapters('{{ story.id }}')"
+            aria-controls="chapters-{{ story.id }}"
+            aria-expanded="false"
+        >
+            <span class="story-card-toggle-icon" aria-hidden="true">▸</span>
+            <span class="sr-only">Toggle chapters for {{ story.title }}</span>
+        </button>
+      {# RIGHT: normal card content #}
+      <div class="story-card-main">
+        <h3 class="story-card-title">
+          <a href="{% url 'feathertree:story_view' story.id %}">
+            {{ story.title|default:"Untitled Story" }}
+          </a>
+        </h3>
+
+        <div class="story-meta">
+          {% if story.last_updated %}
+            <span>Last Updated {{ story.last_updated|date:"F j, Y" }}</span>
+          {% elif story.timestamp %}
+            <span>{{ story.timestamp|date:"F j, Y" }}</span>
+          {% endif %}
+
+          {% if chapters %}
+            <span class="story-card-count">
+              ({{ chapters|length }} chapter{{ chapters|length|pluralize }})
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% else %}
+    {# Non-collapsible version (used on stories page) #}
+    <div class="story-card-main">
+      <h3 class="story-card-title">
+        <a href="{% url 'feathertree:story_view' story.id %}">
+          {{ story.title|default:"Untitled Story" }}
+        </a>
+      </h3>
+
+      <p class="story-meta">
+        {% if story.last_updated %}
+          · <span>{{ story.last_updated|date:"F j, Y" }}</span>
+        {% elif story.timestamp %}
+          · <span>{{ story.timestamp|date:"F j, Y" }}</span>
+        {% endif %}
+      </p>
+    </div>
+  {% endif %}
+
+  {% if is_collapsible and chapters %}
+    <ul id="chapters-{{ story.id }}" class="chapter-list">
+      {% for chapter in chapters %}
+        <li>
+          <a href="{% url 'feathertree:chapter_view' chapter.id %}">
+            Chapter {{ chapter.ordinal }}:
+            {{ chapter.title|default:"Untitled" }}
+          </a>
+          <small>· {{ chapter.timestamp|date:"F j, Y" }}</small>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</li>

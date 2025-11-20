@@ -1,31 +1,35 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("story_tree.js loaded");
+  console.log("story_tree.js loaded");
 
-    const toggles = document.querySelectorAll(".chapter-toggle");
+  const toggles = document.querySelectorAll(".chapter-toggle");
 
-    toggles.forEach((btn) => {
-        const node = btn.closest(".chapter-tree-node");
-        const childrenWrapper = node?.querySelector(".chapter-children");
-        if (!childrenWrapper) return;
+  toggles.forEach((btn) => {
+    const node = btn.closest(".chapter-tree-node");
+    const childrenWrapper = node?.querySelector(".chapter-children");
+    if (!childrenWrapper) return;
 
-        // Default expanded/collapsed state
-        const initiallyExpanded = btn.dataset.initialExpanded === "true";
+    // Derive initial state from the classes on the <ul>
+    const isExpanded = childrenWrapper.classList.contains("is-expanded");
 
-        if (initiallyExpanded) {
-            childrenWrapper.classList.remove("is-collapsed");
-            childrenWrapper.classList.add("is-expanded");
-            btn.classList.add("is-open");
-        } else {
-            childrenWrapper.classList.remove("is-expanded");
-            childrenWrapper.classList.add("is-collapsed");
-            btn.classList.remove("is-open");
-        }
-
-        // Toggle click event
-        btn.addEventListener("click", () => {
-            childrenWrapper.classList.toggle("is-expanded");
-            childrenWrapper.classList.toggle("is-collapsed");
-            btn.classList.toggle("is-open");
-        });
-    });
+    btn.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+    btn.classList.toggle("is-open", isExpanded);
+  });
 });
+
+function toggleChapterChildren(chapterId) {
+  const list = document.getElementById(`children-${chapterId}`);
+  if (!list) return;
+
+  const isExpanded = list.classList.contains("is-expanded");
+
+  // Toggle classes on the children list
+  list.classList.toggle("is-expanded", !isExpanded);
+  list.classList.toggle("is-collapsed", isExpanded);
+
+  // Toggle aria + open state on the button
+  const toggle = document.getElementById(`chapter-toggle-${chapterId}`);
+  if (toggle) {
+    toggle.setAttribute("aria-expanded", !isExpanded ? "true" : "false");
+    toggle.classList.toggle("is-open", !isExpanded);
+  }
+}
