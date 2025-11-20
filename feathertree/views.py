@@ -11,22 +11,10 @@ from .tokens import account_activation_token
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from .tasks import review_chapter
+import os
 
 def index(request):
-    stories_qs = (
-        Story.objects
-        .order_by("-last_updated")
-    )
-
-    paginator = Paginator(stories_qs, 10)  # 10 stories per page, make user-adjustable later
-    page_number = request.GET.get("page")
-    stories_page = paginator.get_page(page_number)
-
-    print(stories_page)
-    
-    return render(request, "feathertree/index.html", {
-        "stories_page": stories_page,
-    })
+    return render(request, "feathertree/index.html")
 
 # User Views
 def user_create(request):
@@ -39,9 +27,9 @@ def user_create(request):
         if form.is_valid():
             # process the data in form.cleaned_data as required
             new_user = form.save(commit=False)
-            new_user.is_active = False
+            new_user.is_active = True # CHANGE THIS TO FALSE WHEN A MAIL SERVER IS LIVE
             new_user.save()
-            send_new_user_confirmation_email(new_user)
+            send_new_user_confirmation_email(new_user) # this is only meaningful if an email host exists
             # redirect to a static page and tell users to check their email:
             return HttpResponseRedirect(reverse("feathertree:new_user_instructions"))
         else:
@@ -113,6 +101,22 @@ def story_view(request, story_id):
     )
     
     return render(request,"feathertree/story_view.html",{"story": story,"chapters": chapters})
+
+def stories(request): # a list of recently updated stories
+    stories_qs = (
+        Story.objects
+        .order_by("-last_updated")
+    )
+
+    paginator = Paginator(stories_qs, 10)  # 10 stories per page, make user-adjustable later
+    page_number = request.GET.get("page")
+    stories_page = paginator.get_page(page_number)
+
+    print(stories_page)
+    
+    return render(request, "feathertree/stories.html", {
+        "stories_page": stories_page,
+    })
 
 
 # Used to create a chapter beyond the first one
@@ -197,8 +201,8 @@ def chapter_view(request, chapter_id):
             "previous_chapter": chapter.previous_chapter,
             "next_chapters": next_chapters,
             "can_edit": can_edit,
-            "can_request_publish": can_request_publish,  # optional now
-            "can_publish": can_publish,                  # optional
+            "can_request_publish": can_request_publish,
+            "can_publish": can_publish,
             "form": form,
         },
     )
