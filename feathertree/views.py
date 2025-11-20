@@ -1,6 +1,6 @@
 from django.contrib.auth import login
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
+from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden, HttpResponse
 from django.urls import reverse
 from django.core.paginator import Paginator
 from .models import User, Story, Chapter
@@ -91,16 +91,6 @@ def story_create(request):
     else:
         form = StoryCreationForm()
         return render(request, "feathertree/story_create.html", {"form": form})
-    
-def story_view(request, story_id):
-    story = get_object_or_404(Story, pk=story_id)
-    chapters = (
-        Chapter.objects
-        .filter(story=story)
-        .order_by("ordinal", "timestamp")
-    )
-    
-    return render(request,"feathertree/story_view.html",{"story": story,"chapters": chapters})
 
 def stories(request): # a list of recently updated stories
     stories_qs = (
@@ -142,15 +132,64 @@ def chapter_create(request, prev_chapter_id):
     else: # process GET request
         form = ChapterCreationForm()
         return render(request, "feathertree/chapter_create.html", {"form": form, "prev_chapter_id": prev_chapter_id})
-    
-# The Story view simply find the first chapter in the story and redirects the user there
+
 def story_view(request, story_id):
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect(reverse("feathertree:index"))
-    else:
-        story = get_object_or_404(Story, pk=story_id)
-        first_chapter = story.chapters.filter(ordinal=1).first()
-        return redirect("feathertree:chapter_view", chapter_id=first_chapter.id)
+    story = get_object_or_404(Story, pk=story_id)
+
+    # Only include non-draft chapters
+    chapters = list(
+        Chapter.objects
+        .filter(story=story, draft=False)
+        .select_related("previous_chapter")
+        .order_by("ordinal", "timestamp")
+    )
+
+    # Build node objects for the tree
+    nodes_by_id = {}
+    for ch in chapters:
+        nodes_by_id[ch.id] = {
+            "chapter": ch,
+            "children": [],
+        }
+
+    roots = []
+
+    # Wire up parent-child relationships
+    for ch in chapters:
+        node = nodes_by_id[ch.id]
+        if ch.previous_chapter_id:
+            parent = nodes_by_id.get(ch.previous_chapter_id)
+            if parent:
+                parent["children"].append(node)
+        else:
+            roots.append(node)
+
+    # Sort children consistently
+    def sort_children(node):
+        node["children"].sort(
+            key=lambda n: (
+                n["chapter"].ordinal,
+                n["chapter"].timestamp or n["chapter"].id
+            )
+        )
+        for child in node["children"]:
+            sort_children(child)
+
+    for root in roots:
+        sort_children(root)
+
+    # First non-draft chapter for CTA
+    first_chapter = roots[0]["chapter"] if roots else None
+
+    return render(
+        request,
+        "feathertree/story_view.html",
+        {
+            "story": story,
+            "chapter_tree": roots,
+            "first_chapter": first_chapter,
+        },
+    )
 
 def chapter_view(request, chapter_id):
     chapter = get_object_or_404(Chapter, pk=chapter_id)

@@ -1,5 +1,5 @@
 # feathertree/tasks.py
-from django.conf import settings
+import os
 from celery import shared_task
 from .models import Chapter
 from .helpers import query_judge
@@ -24,7 +24,8 @@ def review_chapter(chapter_id):
         previous_text = current.content + "\n" + previous_text  # prepend previous content
 
     # Call LLM and generate score w/ feedback
-    if settings.DEVELOPMENT_MODE == False:
+    dev_mode = os.getenv("DEVELOPMENT_MODE", False)
+    if dev_mode == False:
         try:
             score, feedback = query_judge(previous_text, chapter.content)
         except:

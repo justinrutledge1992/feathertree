@@ -1,0 +1,47 @@
+{# nodes = list of { chapter, children } #}
+{# level = depth in the tree (0 = root level) #}
+
+<ul class="chapter-tree level-{{ level|default:0 }}">
+  {% for node in nodes %}
+    {% with chapter=node.chapter children=node.children %}
+      {% with has_children=children|length %}
+        <li class="chapter-tree-node">
+          <div class="chapter-tree-node-inner">
+            {% if has_children %}
+              <button
+                type="button"
+                class="chapter-toggle"
+                aria-label="Toggle branch"
+                data-initial-expanded="{% if level|default:0 == 0 and forloop.first %}true{% else %}false{% endif %}"
+              >
+                ▸
+              </button>
+            {% else %}
+              <span class="chapter-toggle-spacer"></span>
+            {% endif %}
+
+            <div class="chapter-node-pill">
+              <a href="{% url 'feathertree:chapter_view' chapter.id %}" class="chapter-link-title">
+                {{ chapter.ordinal }}. {{ chapter.title|default:"Untitled" }}
+              </a>
+              <div class="chapter-meta">
+                {{ chapter.author.display_name|default:chapter.author.username }}
+                {% if chapter.timestamp %}
+                  · {{ chapter.timestamp|date:"M j, Y" }}
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          {% if has_children %}
+            <div class="chapter-children-wrapper">
+              <ul class="chapter-children {% if level|default:0 == 0 and forloop.first %}is-expanded{% else %}is-collapsed{% endif %}">
+                {% include "feathertree/_chapter_tree.html" with nodes=children level=level|default:0|add:"1" only %}
+              </ul>
+            </div>
+          {% endif %}
+        </li>
+      {% endwith %}
+    {% endwith %}
+  {% endfor %}
+</ul>

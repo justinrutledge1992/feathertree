@@ -17,7 +17,7 @@ urlpatterns = [
     # Story URLs:
     path("stories", views.stories, name="stories"), # main page list of stories
     path("story/create", views.story_create, name="story_create"),
-    path("story/<int:chapter_id>/view", views.story_view, name="story_view"),
+    path("story/<int:story_id>/view", views.story_view, name="story_view"),
     path("chapter/<int:prev_chapter_id>/create", views.chapter_create, name="chapter_create"),
     path("chapter/<int:chapter_id>/view", views.chapter_view, name="chapter_view"),
 
