@@ -12,7 +12,7 @@
 
 <main class="chapter-view content">
   <article class="chapter stack">
-    
+
       <!-- STORY HEADER -->
     <header class="chapter-header section-block">
       <h1 class="story-title">{{ chapter.story.title }}</h1>
@@ -46,12 +46,20 @@
           Saving your changes will also submit this chapter for review.
         {% endif %}
       </div>
+      <!-- if declined: -->
       {% if not chapter.submitted_for_review and chapter.feedback %}
         <div class="notice notice-draft">
           <strong>Chapter Declined:</strong>
           {{ chapter.feedback }}
         </div>
       {% endif %}
+      <!-- if published: -->
+    {% endif %}
+    {% if not chapter.draft and chapter.feedback %}
+      <div class="notice notice-draft">
+        <strong>Chapter Approved:</strong>
+        {{ chapter.feedback }}
+      </div>
     {% endif %}
 
     <!-- MAIN BODY AREA -->
