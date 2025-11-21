@@ -14,48 +14,26 @@
 {% include "feathertree/_header.html" %}
 
 <main class="container content story-page">
-
-  <section class="story-header-block">
-    <a class="back-link" href="{% url 'feathertree:index' %}">← Back to stories</a>
-
-    <h1 class="story-title">
-      {{ story.title|default:"Untitled Story" }}
-    </h1>
-
-    <p class="story-meta">
-      {% if story.last_updated %}
-        <span>Updated {{ story.last_updated|date:"F j, Y" }}</span>
-      {% endif %}
-    </p>
-
-    {% if first_chapter %}
-      <div class="story-actions">
-        <a
-          href="{% url 'feathertree:chapter_view' first_chapter.id %}"
-          class="btn primary"
-        >
-          Start reading
-        </a>
-      </div>
-    {% endif %}
-  </section>
-
-  <section class="branching-section">
-    <header class="branching-header">
-      <h2>Story Tree</h2>
-      <p class="branching-subtitle">
-        The tree below shows how each chapter branches from the previous ones.
+  <article class="stack">
+    <header class="chapter-header section-block">
+      <h2 class="story-title">{{ story.title }}</h2>
+      <p class="story-meta">
+        {% if story.last_updated %}
+          <span>Updated {{ story.last_updated|date:"F j, Y" }}</span>
+        {% endif %}
       </p>
     </header>
 
-    {% if chapter_tree %}
-      <div class="chapter-tree-wrapper">
-        {% include "feathertree/_chapter_tree.html" with nodes=chapter_tree level=0 %}
-      </div>
-    {% else %}
-      <p><em>No chapters yet.</em></p>
-    {% endif %}
-  </section>
-
+    <section class="branching-section">
+      <h3>Chapters</h3>
+      {% if chapter_tree %}
+        <div class="chapter-tree-wrapper">
+          {% include "feathertree/_chapter_tree.html" with nodes=chapter_tree level=0 %}
+        </div>
+      {% else %}
+        <p><em>No chapters yet.</em></p>
+      {% endif %}
+    </section>
+  </article>
 </main>
 {% endblock body %}

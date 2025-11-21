@@ -11,22 +11,26 @@
 {% include "feathertree/_header.html" %}
 
 <main class="chapter-view content">
-
-  <!-- STORY HEADER -->
-  <header class="story-header section-block">
-    <h1 class="story-title">{{ chapter.story.title }}</h1>
-    {% if chapter.story.description %}
-      <p class="story-description">{{ chapter.story.description }}</p>
-    {% endif %}
-  </header>
-
   <article class="chapter stack">
+    
+      <!-- STORY HEADER -->
+    <header class="chapter-header section-block">
+      <h1 class="story-title">{{ chapter.story.title }}</h1>
+      {% if chapter.story.description %}
+        <p class="story-description">{{ chapter.story.description }}</p>
+      {% endif %}
+    </header>
 
     <!-- CHAPTER HEADER -->
     <header class="chapter-header section-block">
       <p class="chapter-meta">
         <em>Chapter {{ chapter.ordinal }}</em>
-        <small>{{ chapter.author.display_name }} | {{ chapter.timestamp|date:"F j, Y" }}</small>
+        <small>
+          <a href="{% url 'feathertree:user_profile' user_id=chapter.author.id %}">
+            {{ chapter.author.display_name }}
+          </a>
+          | {{ chapter.timestamp|date:"F j, Y" }}
+        </small>
       </p>
       <h2 class="chapter-title">{{ chapter.title|default:"Untitled Chapter" }}</h2>
     </header>
@@ -93,12 +97,12 @@
       {% endif %}
 
       {% if next_chapters %}
-        <p><strong>Branching Next Chapters:</strong></p>
+        <p><strong>Chapter {{ chapter.ordinal|add:"1" }}:</strong></p>
         <ul>
           {% for nxt in next_chapters %}
             <li>
               <a href="{% url 'feathertree:chapter_view' nxt.id %}">
-                Chapter {{ nxt.ordinal }}: {{ nxt.title|default:"Untitled" }}
+                {{ nxt.title|default:"Untitled" }}
                 {% if nxt.draft %}<em> (Draft)</em>{% endif %}
               </a>
               <small>· {{ nxt.timestamp|date:"F j, Y" }}</small>

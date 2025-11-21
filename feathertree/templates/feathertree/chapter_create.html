@@ -9,14 +9,12 @@
 {% block simple_form_content %}
 <h4>Create Chapter</h4>
 
-<p>Fill out the fields below to add a new chapter.</p>
-
 {% include "feathertree/_form_errors.html" %}
-
-<form action="{% url 'feathertree:chapter_create' prev_chapter_id %}" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Publish Chapter</button>
-</form>
-
+<article class="stack">
+    <form action="{% url 'feathertree:chapter_create' prev_chapter_id %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save as Draft</button>
+    </form>
+</article>
 {% endblock simple_form_content %}

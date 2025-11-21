@@ -34,9 +34,10 @@
                     {{ chapter.title|default:"Untitled" }}
                   </a>
                 </div>
-
                 <div class="chapter-meta">
-                  {{ chapter.author.display_name|default:chapter.author.username }}
+                  <a href="{% url 'feathertree:user_profile' user_id=chapter.author.id %}">
+                    {{ chapter.author.display_name }}
+                  </a>
                   {% if chapter.timestamp %}
                     · {{ chapter.timestamp|date:"M j, Y" }}
                   {% endif %}

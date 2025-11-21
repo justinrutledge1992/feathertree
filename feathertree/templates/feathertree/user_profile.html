@@ -14,17 +14,15 @@
 {% include "feathertree/_header.html" %}
 
 <main class="container content profile">
-  <h4>{{ profile_user.display_name }}'s Feathertree</h4>
-  <h5>Stories & Chapters</h5>
-
-  {% if story_groups %}
-    <ul class="story-list profile-story-list">
-    {% for group in story_groups %}
-        {% include "feathertree/_story_card.html" with story=group.story chapters=group.chapters is_collapsible=True %}
-    {% endfor %}
-    </ul>
-  {% else %}
-    <p><em>No chapters yet.</em></p>
-  {% endif %}
+  <h3>{{ profile_user.display_name }}'s Feathertree</h3>
+    {% if story_groups %}
+      <ul class="story-list profile-story-list">
+      {% for group in story_groups %}
+          {% include "feathertree/_story_card.html" with story=group.story chapters=group.chapters is_collapsible=True %}
+      {% endfor %}
+      </ul>
+    {% else %}
+      <p><em>No chapters yet.</em></p>
+    {% endif %}
 </main>
 {% endblock body %}
