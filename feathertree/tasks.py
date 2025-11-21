@@ -24,23 +24,14 @@ def review_chapter(chapter_id):
         previous_text = current.content + "\n" + previous_text  # prepend previous content
 
     # Call LLM and generate score w/ feedback
-    dev_mode = os.getenv("DEVELOPMENT_MODE", False)
-    if dev_mode == False:
-        try:
-            score, feedback = query_judge(previous_text, chapter.content)
-        except:
-            logger.exception("Error in query_judge for chapter with ID: %s", chapter_id)
-            score = 0
-            feedback = "Error querying review system."
-            chapter.submitted_for_review = False
-            chapter.save()
-    else:
-        if chapter.content == "fail":
-            score = 1
-            feedback = "Terrible job!"
-        else:
-            score = 5
-            feedback = "Great job!"
+    try:
+        score, feedback = query_judge(previous_text, chapter.content)
+    except:
+        logger.exception("Error in query_judge for chapter with ID: %s", chapter_id)
+        score = 0
+        feedback = "Error querying review system."
+        chapter.submitted_for_review = False
+        chapter.save()
 
     # Mark as published (draft=False) if the score exceeds some threshold
     # And update the story last_updated field
