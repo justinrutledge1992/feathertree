@@ -11,15 +11,15 @@
 
 <h4>Sign Up</h4>
 
-<p>Please use a valid email address. A confirmation email will be sent to activate your account.</p>
+<article class="stack">
+    {% include "feathertree/_form_errors.html" %}
 
-{% include "feathertree/_form_errors.html" %}
-
-<form action="{% url 'feathertree:user_create' %}" method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Sign Up</button>
-</form>
+    <form action="{% url 'feathertree:user_create' %}" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Sign Up</button>
+    </form>
+</article>
 
 <p>Already have an account? Log in <a href="{% url 'login' %}">here</a>!</p>
 

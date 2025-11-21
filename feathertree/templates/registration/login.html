@@ -10,30 +10,30 @@
 {% if not user.is_authenticated %}
 
 <h4>Log In</h4>
+<article class="stack">
+    <form action="{% url 'login' %}" method="post">
+        {% csrf_token %}
 
-<form action="{% url 'login' %}" method="post">
-    {% csrf_token %}
+        <label for="id_username">Email address *</label>
+        <input 
+            type="text" 
+            name="username" 
+            id="id_username" 
+            required 
+            autocomplete="username" 
+            maxlength="254">
 
-    <label for="id_username">Email address *</label>
-    <input 
-        type="text" 
-        name="username" 
-        id="id_username" 
-        required 
-        autocomplete="username" 
-        maxlength="254">
+        <label for="id_password">Password *</label>
+        <input 
+            type="password" 
+            name="password" 
+            id="id_password" 
+            required 
+            autocomplete="current-password">
 
-    <label for="id_password">Password *</label>
-    <input 
-        type="password" 
-        name="password" 
-        id="id_password" 
-        required 
-        autocomplete="current-password">
-
-    <button type="submit">Log In</button>
-</form>
-
+        <button type="submit">Log In</button>
+    </form>
+</article>
 <p>If you don't have an account, sign up <a href="{% url 'feathertree:user_create' %}">here</a>!</p>
 
 <script>

@@ -11,13 +11,13 @@ class UserCreationForm(DjangoUserCreationForm):
         max_length=40,
         required=True,
         label=_("Username"),
-        help_text=_("This will be your public display name."),
+        help_text=_("Public display name."),
     )
 
     email = forms.EmailField(
         required=True,
         label=_("Email address"),
-        help_text=_("You'll use this email to log in."),
+        help_text=_("Email used for login and account verification."),
     )
 
     class Meta:
