@@ -30,7 +30,7 @@ def user_create(request):
             new_user = form.save(commit=False)
             new_user.is_active = True # CHANGE THIS TO FALSE WHEN A MAIL SERVER IS LIVE
             new_user.save()
-            send_new_user_confirmation_email(new_user) # this is only meaningful if an email host exists
+            # send_new_user_confirmation_email(new_user) # this is only meaningful if an email host exists
             # redirect to a static page and tell users to check their email:
             return HttpResponseRedirect(reverse("feathertree:new_user_instructions"))
         else:
