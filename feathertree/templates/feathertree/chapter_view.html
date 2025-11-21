@@ -80,7 +80,7 @@
           <!-- UNPUBLISHED & UNEDITABLE: show read-only content -->
           <section class="section-block section-content emphasis">
             <div class="chapter-content">
-              {{ chapter.content|safe }}
+              {{ chapter.content|safe|linebreaksbr }}
             </div>
           </section>
         {% endif %}
@@ -89,7 +89,7 @@
       <!-- PUBLISHED: show read-only content -->
       <section class="section-block section-content emphasis">
         <div class="chapter-content">
-          {{ chapter.content|safe }}
+          {{ chapter.content|safe|linebreaksbr }}
         </div>
       </section>
     {% endif %}
