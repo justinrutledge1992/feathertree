@@ -57,9 +57,16 @@ def user_profile(request, user_id):
             "chapters": chapter_list,
         })
 
+    drafts = (
+        Chapter.objects
+        .filter(author=profile_user, draft=True)
+        .order_by('-timestamp')
+    )
+
     return render(request, "feathertree/user_profile.html", {
         "profile_user": profile_user,
         "story_groups": story_groups,
+        "drafts": drafts,
     })
 
 

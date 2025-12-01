@@ -31,7 +31,13 @@
   <section class="hero">
     <h1 class="hero-title">Feathertree</h1>
     <p class="hero-subtitle">A branching storybook for collective imagination.</p>
-    <a class="btn primary" href="{% url 'feathertree:user_create' %}">Sign Up To Get Started</a>
+    <div class="button-group">
+      <a class="btn primary" href="{% url 'feathertree:user_create' %}">Sign Up To Get Started</a>
+    </div>
+    <br>
+    <div class="button-group">
+      <a class="btn secondary" href="{% url 'feathertree:stories' %}">View Stories</a>
+    </div>
   </section>
 
   {% endif %}

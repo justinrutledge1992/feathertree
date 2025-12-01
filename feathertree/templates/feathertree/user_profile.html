@@ -14,15 +14,46 @@
 {% include "feathertree/_header.html" %}
 
 <main class="container content profile">
-  <h3>{{ profile_user.display_name }}'s Chapters</h3>
+  <h2>{{ profile_user.display_name }}</h2>
+
+  {# --- DRAFTS SECTION --- #}
+  {% if user.is_authenticated %}
+  <section class="profile-drafts">
+    <h3>Draft Chapters</h3>
+    {% if drafts %}
+      <ul class="story-list profile-drafts-list">
+        {% for chapter in drafts %}
+          <li class="story-card draft-card">
+            <a href="{% url 'feathertree:chapter_view' chapter.id %}">
+              <strong>{{ chapter.story.title|default:"Untitled Story" }}</strong>
+              <span> — Chapter {{ chapter.ordinal }}{% if chapter.title %}: {{ chapter.title }}{% endif %}</span>
+            </a>
+            <p class="chapter-meta">
+              <small>
+                Last updated {{ chapter.timestamp|date:"F j, Y, g:i a" }}
+              </small>
+            </p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p><em>No drafts yet.</em></p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {# --- PUBLISHED / ALL CHAPTERS SECTION --- #}
+  <section class="profile-chapters">
+    <h3>{{ profile_user.display_name }}'s Chapters</h3>
     {% if story_groups %}
       <ul class="story-list profile-story-list">
-      {% for group in story_groups %}
+        {% for group in story_groups %}
           {% include "feathertree/_story_card.html" with story=group.story chapters=group.chapters is_collapsible=True %}
-      {% endfor %}
+        {% endfor %}
       </ul>
     {% else %}
       <p><em>No chapters yet.</em></p>
     {% endif %}
+  </section>
 </main>
 {% endblock body %}

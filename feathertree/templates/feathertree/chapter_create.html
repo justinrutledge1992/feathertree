@@ -14,7 +14,7 @@
     <form action="{% url 'feathertree:chapter_create' prev_chapter_id %}" method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Save as Draft</button>
+        <button type="submit">💾 Save as Draft</button>
     </form>
 </article>
 {% endblock simple_form_content %}
