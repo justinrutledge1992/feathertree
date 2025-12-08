@@ -88,7 +88,7 @@ Your task is to evaluate the continuity between previous text and current text.
 1. Compare the current text to the previous text.
 2. Evaluate continuity in theme, tone, narrative flow, logic, and character consistency.
 3. Identify whether new elements introduced in the current text make sense within the story.
-4. Identify any breaks in logic, tone, or narrative structure.
+4. Identify any breaks in logic, tone, or structure that may disrupt the narrative flow.
 5. Use the scoring rubric to determine the appropriate score.
 6. Justify your evaluation with specific references to both passages.
 
@@ -175,7 +175,7 @@ def call_featherjudge(payload):
             url,
             headers={"Authorization": f"Api-Key {settings.BASETEN_API_KEY}"},
             json=payload,
-            timeout=30,
+            timeout=120,
         )
 
         resp.raise_for_status()
